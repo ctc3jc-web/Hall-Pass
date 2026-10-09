@@ -16,12 +16,32 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
+    /* MAIN CONTAINER: SIDE-BY-SIDE SPLIT */
     .kiosk-container {
       display: flex;
-      flex-direction: column;
+      width: 100vw;
       height: 100vh;
-      padding: 0.8vh 1.5vw;
+      padding: 0.8vh 1vw;
+      gap: 1vw;
+    }
+
+    /* LEFT SIDE: 75% WIDTH */
+    .left-side {
+      width: 75%;
+      display: flex;
+      flex-direction: column;
       gap: 0.8vh;
+    }
+
+    /* RIGHT SIDE: 25% WIDTH */
+    .right-side {
+      width: 25%;
+      background: #181818;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
     }
 
     /* HEADER */
@@ -29,36 +49,36 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 7vh;
+      height: 10vh;
       background: #1e1e1e;
       border: 1px solid #333;
       border-radius: 6px;
-      padding: 0 10px;
+      padding: 0 12px;
     }
 
-    h1 { font-size: 2.5vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; }
+    h1 { font-size: 3.5vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
     .usb-bar { display: flex; align-items: center; gap: 8px; }
-    .usb-status { font-weight: bold; font-size: 1.8vh; }
+    .usb-status { font-weight: bold; font-size: 2.2vh; }
     .usb-status.connected { color: #20c997; }
     .usb-status.disconnected { color: #dc3545; }
-    .usb-btn { background: #0d6efd; border: none; color: white; font-weight: bold; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 1.6vh; }
+    .usb-btn { background: #0d6efd; border: none; color: white; font-weight: bold; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 2vh; }
 
-    /* LOCATION GRID */
+    /* LOCATION GRID (2x4) */
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      gap: 0.6vh 0.8vw;
-      height: 42vh;
+      gap: 0.8vh 0.8vw;
+      height: 52vh;
     }
 
     .loc-btn {
       background: #1e1e1e;
-      border: 2px solid #333;
+      border: 2px solid #444;
       color: white;
-      font-size: 2.1vh;
-      font-weight: bold;
-      border-radius: 6px;
+      font-size: 3vh;
+      font-weight: 800;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -70,12 +90,12 @@
     .loc-btn.active {
       background: #0d6efd;
       border-color: #6ea8fe;
-      box-shadow: 0 0 8px rgba(13, 110, 253, 0.5);
+      box-shadow: 0 0 12px rgba(13, 110, 253, 0.7);
     }
 
     /* INPUT ROW */
     .input-card {
-      height: 14vh;
+      height: 18vh;
       display: flex;
       gap: 8px;
     }
@@ -83,10 +103,11 @@
     #manualIdInput {
       flex: 1;
       background: #2a2a2a;
-      border: 2px solid #444;
+      border: 2px solid #555;
       color: #fff;
-      font-size: 3vh;
-      padding: 0 10px;
+      font-size: 4vh;
+      font-weight: bold;
+      padding: 0 12px;
       border-radius: 6px;
       text-align: center;
       outline: none;
@@ -96,109 +117,108 @@
       background: #198754;
       border: none;
       color: white;
-      font-size: 2.5vh;
-      font-weight: bold;
-      padding: 0 20px;
+      font-size: 3.5vh;
+      font-weight: 900;
+      padding: 0 24px;
       border-radius: 6px;
       cursor: pointer;
     }
 
     /* STATUS BAR */
     .status-card {
-      height: 12vh;
+      height: 16vh;
       background: #1e1e1e;
       border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 2vh;
-      border: 1px solid #444;
+      font-size: 2.8vh;
+      font-weight: bold;
+      border: 2px solid #444;
       padding: 0 8px;
     }
     .status-card.success { border-color: #198754; background: #0f291e; }
     .status-card.returned { border-color: #0dcaf0; background: #082d38; }
     .status-card.error { border-color: #dc3545; background: #2c0b0e; }
 
-    /* ACTIVE PASSES PANEL */
-    .active-panel {
-      height: 21vh;
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 6px;
-      padding: 4px 8px;
-      display: flex;
-      flex-direction: column;
-    }
-
+    /* RIGHT SIDE: ACTIVE PASSES */
     .active-header {
-      font-size: 1.6vh;
+      font-size: 2.5vh;
       color: #ffc107;
-      font-weight: bold;
+      font-weight: 900;
       text-transform: uppercase;
-      margin-bottom: 3px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #333;
+      margin-bottom: 8px;
+      text-align: center;
     }
 
     .active-list {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+      flex-direction: column;
+      gap: 8px;
       overflow-y: auto;
       flex: 1;
     }
 
     .pass-chip {
       background: #2b2b2b;
-      border: 1px solid #ffc107;
-      border-radius: 4px;
-      padding: 2px 8px;
-      font-size: 1.7vh;
+      border: 2px solid #ffc107;
+      border-radius: 6px;
+      padding: 6px 8px;
       display: flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .pass-chip .time { color: #aaa; font-size: 1.4vh; }
+    .pass-chip .name { font-size: 2.3vh; font-weight: bold; color: #fff; }
+    .pass-chip .details { font-size: 1.8vh; color: #bbb; display: flex; justify-content: space-between; }
   </style>
 </head>
 <body onclick="keepFocus()">
 
   <div class="kiosk-container">
-    <header>
-      <h1>MR. CARNEAL - HALL PASS</h1>
-      <div class="usb-bar">
-        <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
-        <button type="button" class="usb-btn" onclick="connectPrinter()">Connect</button>
+    
+    <!-- LEFT SIDE: 75% WIDTH -->
+    <div class="left-side">
+      <header>
+        <h1>MR. CARNEAL - HALL PASS</h1>
+        <div class="usb-bar">
+          <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
+          <button type="button" class="usb-btn" onclick="connectPrinter()">Connect</button>
+        </div>
+      </header>
+
+      <div class="grid">
+        <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Services</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
       </div>
-    </header>
 
-    <div class="grid">
-      <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Services</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
-      <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
+      <div class="input-card">
+        <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
+        <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
+      </div>
+
+      <div id="statusBox" class="status-card">
+        1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In
+      </div>
     </div>
 
-    <div class="input-card">
-      <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
-      <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
-    </div>
-
-    <div id="statusBox" class="status-card">
-      1. Tap Location &amp; Scan to Leave &nbsp;|&nbsp; 2. Scan Again to Check Back In
-    </div>
-
-    <div class="active-panel">
-      <div class="active-header">Currently Out (<span id="activeCount">0</span>)</div>
+    <!-- RIGHT SIDE: 25% WIDTH -->
+    <div class="right-side">
+      <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>)</div>
       <div id="activeList" class="active-list">
-        <span style="color:#666; font-size:1.6vh;">No active passes</span>
+        <span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -264,9 +284,11 @@
       statusElem.innerText = "PRINTER: Connected ✓";
     }
 
-    // PRINT PASS LOGIC
+    // PRINT PASS LOGIC WITH DATE & TIME
     async function printPass(studentName, location, timeStr) {
       if (!usbDevice || !endpointOut) return;
+
+      const dateStr = new Date().toLocaleDateString('en-US'); // Date Stamp (MM/DD/YYYY)
 
       const ESC = '\x1B', GS = '\x1D';
       let passData = ESC + '@' + ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
@@ -276,7 +298,8 @@
       passData += ESC + 'a\x00';
       passData += `STUDENT: ${studentName}\n`;
       passData += `DEST:    ${location}\n`;
-      passData += `ISSUED:  ${timeStr}\n\n`;
+      passData += `DATE:    ${dateStr}\n`;
+      passData += `TIME:    ${timeStr}\n\n`;
       passData += ESC + 'a\x01' + "--------------------------------\nValid for one-way return\n================================\n";
       passData += '\n\n\n\n' + GS + 'V\x41\x00';
 
@@ -291,7 +314,7 @@
       element.classList.add('active');
       selectedLocation = locName;
       document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Issue Pass`;
+      document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Leave`;
       keepFocus();
     }
 
@@ -302,14 +325,17 @@
       countElem.innerText = activePasses.length;
 
       if (activePasses.length === 0) {
-        listElem.innerHTML = `<span style="color:#666; font-size:1.6vh;">No active passes</span>`;
+        listElem.innerHTML = `<span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>`;
         return;
       }
 
       listElem.innerHTML = activePasses.map(p => `
         <div class="pass-chip">
-          <b>${p.name}</b> (${p.location})
-          <span class="time">${p.time}</span>
+          <div class="name">${p.name}</div>
+          <div class="details">
+            <span>${p.location}</span>
+            <span>${p.time}</span>
+          </div>
         </div>
       `).join('');
     }
@@ -320,10 +346,8 @@
 
       if (!studentId) return;
 
-      // Check locally if student is already active
       const existingIndex = activePasses.findIndex(p => p.id === studentId);
 
-      // If NOT active and NO location picked, prompt error
       if (existingIndex === -1 && !selectedLocation) {
         document.getElementById('statusBox').className = "status-card error";
         document.getElementById('statusBox').innerText = "ERROR: Tap a location first!";
@@ -342,14 +366,12 @@
       .then(result => {
         if (result.status === "success") {
           if (result.action === "ISSUED") {
-            // Add to active array & print
             activePasses.push({ id: result.studentId, name: result.name, location: result.location, time: result.timestamp });
             document.getElementById('statusBox').className = "status-card success";
             document.getElementById('statusBox').innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
             printPass(result.name, result.location, result.timestamp);
           } 
           else if (result.action === "RETURNED") {
-            // Remove from active array
             activePasses = activePasses.filter(p => p.id !== result.studentId);
             document.getElementById('statusBox').className = "status-card returned";
             document.getElementById('statusBox').innerHTML = `WELCOME BACK! <b>${result.name}</b> checked in.`;
@@ -367,7 +389,7 @@
 
         setTimeout(() => {
           document.getElementById('statusBox').className = "status-card";
-          document.getElementById('statusBox').innerHTML = "1. Tap Location &amp; Scan to Leave &nbsp;|&nbsp; 2. Scan Again to Check Back In";
+          document.getElementById('statusBox').innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In";
           keepFocus();
         }, 3000);
       })
