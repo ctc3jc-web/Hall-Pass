@@ -21,6 +21,7 @@
       background: #121212;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      touch-action: manipulation;
     }
 
     /* MAIN CONTAINER: SIDE-BY-SIDE SPLIT */
@@ -68,7 +69,17 @@
     .usb-status { font-weight: bold; font-size: 2.2vh; }
     .usb-status.connected { color: #20c997; }
     .usb-status.disconnected { color: #dc3545; }
-    .usb-btn { background: #0d6efd; border: none; color: white; font-weight: bold; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 2vh; }
+    .usb-btn { 
+      background: #0d6efd; 
+      border: none; 
+      color: white; 
+      font-weight: bold; 
+      padding: 4px 10px; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 2vh; 
+      pointer-events: auto;
+    }
 
     /* LOCATION GRID (2x4) */
     .grid {
@@ -92,6 +103,7 @@
       text-align: center;
       cursor: pointer;
       user-select: none;
+      pointer-events: auto;
     }
 
     .loc-btn.active {
@@ -118,6 +130,7 @@
       border-radius: 6px;
       text-align: center;
       outline: none;
+      pointer-events: auto;
     }
 
     .submit-btn {
@@ -129,6 +142,7 @@
       padding: 0 24px;
       border-radius: 6px;
       cursor: pointer;
+      pointer-events: auto;
     }
 
     /* STATUS & ACTION ROW */
@@ -168,6 +182,7 @@
       align-items: center;
       justify-content: center;
       white-space: nowrap;
+      pointer-events: auto;
     }
     .reprint-btn:disabled {
       background: #444;
@@ -209,7 +224,7 @@
     .pass-chip .details { font-size: 1.8vh; color: #bbb; display: flex; justify-content: space-between; }
   </style>
 </head>
-<body onclick="handleGlobalClick(event)">
+<body>
 
   <div class="kiosk-container">
     
@@ -228,8 +243,8 @@
         <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Student Services</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'TLC')">TLC</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Services</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
       </div>
@@ -253,257 +268,4 @@
     <div class="right-side">
       <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>)</div>
       <div id="activeList" class="active-list">
-        <span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoznmjLIO7d_CLAvthSzToJEDyjcXhcdbxWEdinacJCKXJIRMd7867X5rhXUPNjs2bLQ/exec";
-
-    let usbDevice = null;
-    let endpointOut = null;
-    let selectedLocation = "";
-    let activePasses = [];
-    let lastPrintedPass = null;
-
-    // REGISTER SERVICE WORKER (Enables Chrome "Install App" capability)
-    if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
-}
-
-    // FIX FOR CLICKING: Only regain focus if user didn't click a button or input
-    function handleGlobalClick(event) {
-      const isButton = event.target.closest('.loc-btn, .submit-btn, .usb-btn, .reprint-btn, input');
-      if (!isButton) {
-        keepFocus();
-      }
-    }
-
-    function keepFocus() {
-      const inputField = document.getElementById('manualIdInput');
-      if (document.activeElement !== inputField) {
-        inputField.focus();
-      }
-    }
-
-    // AUTO-CONNECT PRINTER
-    window.addEventListener('DOMContentLoaded', async () => {
-      keepFocus();
-      autoConnectPrinter();
-    });
-
-    async function autoConnectPrinter() {
-      const statusElem = document.getElementById('usbStatus');
-      try {
-        const devices = await navigator.usb.getDevices();
-        if (devices.length > 0) {
-          usbDevice = devices[0];
-          await initializePrinter(usbDevice);
-        }
-      } catch (error) {
-        console.error("Auto-connect error:", error);
-      }
-    }
-
-    async function connectPrinter() {
-      const statusElem = document.getElementById('usbStatus');
-      try {
-        usbDevice = await navigator.usb.requestDevice({ filters: [] });
-        await initializePrinter(usbDevice);
-      } catch (error) {
-        statusElem.className = "usb-status disconnected";
-        statusElem.innerText = "PRINTER: " + error.message;
-      }
-    }
-
-   async function initializePrinter(device) {
-  const statusElem = document.getElementById('usbStatus');
-  
-  await device.open();
-  
-  if (device.configuration === null) {
-    await device.selectConfiguration(1);
-  }
-
-  try {
-    // Attempt to claim interface 0
-    await device.claimInterface(0);
-  } catch (err) {
-    console.warn("Claim interface failed, attempting release & retry:", err);
-    // If locked, attempt resetting the device interface before claiming again
-    try {
-      await device.releaseInterface(0);
-    } catch (e) { /* ignore if wasn't claimed */ }
-    await device.claimInterface(0);
-  }
-
-  const interfaces = device.configuration.interfaces;
-  for (let iface of interfaces) {
-    for (let alternate of iface.alternates) {
-      let outEp = alternate.endpoints.find(e => e.direction === 'out');
-      if (outEp) { endpointOut = outEp; break; }
-    }
-  }
-
-  statusElem.className = "usb-status connected";
-  statusElem.innerText = "PRINTER: Connected ✓";
-}
-
-      const interfaces = device.configuration.interfaces;
-      for (let iface of interfaces) {
-        for (let alternate of iface.alternates) {
-          let outEp = alternate.endpoints.find(e => e.direction === 'out');
-          if (outEp) { endpointOut = outEp; break; }
-        }
-      }
-
-      statusElem.className = "usb-status connected";
-      statusElem.innerText = "PRINTER: Connected ✓";
-    }
-
-    // PRINT PASS LOGIC
-    async function printPass(studentName, location, timeStr) {
-      if (!usbDevice || !endpointOut) return;
-
-      const dateStr = new Date().toLocaleDateString('en-US');
-      const ESC = '\x1B', GS = '\x1D';
-
-      let passData = "";
-      passData += ESC + '@' + ESC + '3\x18';
-      passData += ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
-      passData += "--------------------------------\n";
-      passData += GS + '!\x11' + "HALL PASS\n" + GS + '!\x00';
-      passData += "--------------------------------\n";
-      passData += ESC + 'a\x00';
-      passData += `STUDENT: ${studentName}\n`;
-      passData += `DEST:    ${location}\n`;
-      passData += `DATE:    ${dateStr}\n`;
-      passData += `TIME:    ${timeStr}\n`;
-      passData += ESC + 'a\x01' + "--------------------------------\n";
-      passData += '\n\n' + GS + 'V\x41\x00';
-
-      const encoder = new TextEncoder();
-      try {
-        await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
-      } catch (err) {
-        console.error("Print failed:", err);
-      }
-    }
-
-    function reprintLastPass() {
-      if (!lastPrintedPass) return;
-      printPass(lastPrintedPass.name, lastPrintedPass.location, lastPrintedPass.timestamp);
-      
-      const statusBox = document.getElementById('statusBox');
-      statusBox.className = "status-card success";
-      statusBox.innerHTML = `REPRINTED PASS FOR <b>${lastPrintedPass.name}</b>`;
-      
-      setTimeout(() => {
-        statusBox.className = "status-card";
-        statusBox.innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In";
-        keepFocus();
-      }, 3000);
-    }
-
-    function selectLoc(element, locName) {
-      document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
-      element.classList.add('active');
-      selectedLocation = locName;
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Leave`;
-      keepFocus();
-    }
-
-    function renderActivePasses() {
-      const listElem = document.getElementById('activeList');
-      const countElem = document.getElementById('activeCount');
-      
-      countElem.innerText = activePasses.length;
-
-      if (activePasses.length === 0) {
-        listElem.innerHTML = `<span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>`;
-        return;
-      }
-
-      listElem.innerHTML = activePasses.map(p => `
-        <div class="pass-chip">
-          <div class="name">${p.name}</div>
-          <div class="details">
-            <span>${p.location}</span>
-            <span>${p.time}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function processPass() {
-      const inputField = document.getElementById('manualIdInput');
-      let studentId = inputField.value.trim();
-
-      if (!studentId) return;
-
-      const existingIndex = activePasses.findIndex(p => p.id === studentId);
-
-      if (existingIndex === -1 && !selectedLocation) {
-        document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "ERROR: Tap a location first!";
-        return;
-      }
-
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerText = "Communicating with server...";
-
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ studentId: studentId, location: selectedLocation })
-      })
-      .then(res => res.json())
-      .then(result => {
-        if (result.status === "success") {
-          if (result.action === "ISSUED") {
-            activePasses.push({ id: result.studentId, name: result.name, location: result.location, time: result.timestamp });
-            document.getElementById('statusBox').className = "status-card success";
-            document.getElementById('statusBox').innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
-            
-            lastPrintedPass = { name: result.name, location: result.location, timestamp: result.timestamp };
-            document.getElementById('reprintBtn').disabled = false;
-
-            printPass(result.name, result.location, result.timestamp);
-          } 
-          else if (result.action === "RETURNED") {
-            activePasses = activePasses.filter(p => p.id !== result.studentId);
-            document.getElementById('statusBox').className = "status-card returned";
-            document.getElementById('statusBox').innerHTML = `WELCOME BACK! <b>${result.name}</b> checked in.`;
-          }
-
-          renderActivePasses();
-        } else {
-          document.getElementById('statusBox').className = "status-card error";
-          document.getElementById('statusBox').innerText = "ERROR: " + result.message;
-        }
-
-        inputField.value = '';
-        selectedLocation = "";
-        document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
-
-        setTimeout(() => {
-          document.getElementById('statusBox').className = "status-card";
-          document.getElementById('statusBox').innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In";
-          keepFocus();
-        }, 3000);
-      })
-      .catch(err => {
-        document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "NETWORK ERROR: " + err.message;
-      });
-    }
-
-    document.getElementById('manualIdInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') processPass();
-    });
-  </script>
-</body>
-</html>
+        <span
