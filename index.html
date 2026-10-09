@@ -76,7 +76,7 @@
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 0.8vh 0.8vw;
-      height: 52vh;
+      height: 48vh;
     }
 
     .loc-btn {
@@ -102,7 +102,7 @@
 
     /* INPUT ROW */
     .input-card {
-      height: 18vh;
+      height: 16vh;
       display: flex;
       gap: 8px;
     }
@@ -131,16 +131,22 @@
       cursor: pointer;
     }
 
-    /* STATUS BAR */
+    /* STATUS & ACTION ROW */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      height: 14vh;
+    }
+
     .status-card {
-      height: 16vh;
+      flex: 1;
       background: #1e1e1e;
       border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 2.8vh;
+      font-size: 2.6vh;
       font-weight: bold;
       border: 2px solid #444;
       padding: 0 8px;
@@ -148,6 +154,26 @@
     .status-card.success { border-color: #198754; background: #0f291e; }
     .status-card.returned { border-color: #0dcaf0; background: #082d38; }
     .status-card.error { border-color: #dc3545; background: #2c0b0e; }
+
+    .reprint-btn {
+      background: #ffc107;
+      color: #000;
+      border: none;
+      font-size: 2.3vh;
+      font-weight: 900;
+      padding: 0 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+    .reprint-btn:disabled {
+      background: #444;
+      color: #888;
+      cursor: not-allowed;
+    }
 
     /* RIGHT SIDE: ACTIVE PASSES */
     .active-header {
@@ -213,8 +239,13 @@
         <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
       </div>
 
-      <div id="statusBox" class="status-card">
-        1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In
+      <div class="action-row">
+        <div id="statusBox" class="status-card">
+          1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In
+        </div>
+        <button type="button" id="reprintBtn" class="reprint-btn" onclick="reprintLastPass()" disabled>
+          🔄 REPRINT LAST PASS
+        </button>
       </div>
     </div>
 
@@ -235,6 +266,7 @@
     let endpointOut = null;
     let selectedLocation = "";
     let activePasses = [];
+    let lastPrintedPass = null; // Memory buffer for reprinting
 
     function keepFocus() {
       const inputField = document.getElementById('manualIdInput');
@@ -291,58 +323,17 @@
       statusElem.innerText = "PRINTER: Connected ✓";
     }
 
-    // PRINT PASS LOGIC WITH DATE & TIME
+    // ULTRA-COMPACT PRINT PASS LOGIC
     async function printPass(studentName, location, timeStr) {
       if (!usbDevice || !endpointOut) return;
 
-      const dateStr = new Date().toLocaleDateString('en-US'); // Date Stamp (MM/DD/YYYY)
-
+      const dateStr = new Date().toLocaleDateString('en-US');
       const ESC = '\x1B', GS = '\x1D';
-      let passData = ESC + '@' + ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
-      passData += "================================\n";
+
+      let passData = "";
+      passData += ESC + '@' + ESC + '3\x18'; // Reset & set tight line spacing
+      passData += ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
+      passData += "--------------------------------\n";
       passData += GS + '!\x11' + "HALL PASS\n" + GS + '!\x00';
-      passData += "================================\n\n";
-      passData += ESC + 'a\x00';
-      passData += `STUDENT: ${studentName}\n`;
-      passData += `DEST:    ${location}\n`;
-      passData += `DATE:    ${dateStr}\n`;
-      passData += `TIME:    ${timeStr}\n\n`;
-      passData += ESC + 'a\x01' + "--------------------------------\nValid for one-way return\n================================\n";
-      passData += '\n\n\n\n' + GS + 'V\x41\x00';
-
-      const encoder = new TextEncoder();
-      try {
-        await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
-      } catch (err) { console.error("Print failed:", err); }
-    }
-
-    function selectLoc(element, locName) {
-      document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
-      element.classList.add('active');
-      selectedLocation = locName;
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Leave`;
-      keepFocus();
-    }
-
-    function renderActivePasses() {
-      const listElem = document.getElementById('activeList');
-      const countElem = document.getElementById('activeCount');
-      
-      countElem.innerText = activePasses.length;
-
-      if (activePasses.length === 0) {
-        listElem.innerHTML = `<span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>`;
-        return;
-      }
-
-      listElem.innerHTML = activePasses.map(p => `
-        <div class="pass-chip">
-          <div class="name">${p.name}</div>
-          <div class="details">
-            <span>${p.location}</span>
-            <span>${p.time}</span>
-          </div>
-        </div>
-      `).join('');
-    }
+      passData += "--------------------------------\n";
+      passData += ESC + '
