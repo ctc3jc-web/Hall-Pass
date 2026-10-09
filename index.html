@@ -2,98 +2,212 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hall Pass Kiosk Station</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hall Pass Kiosk</title>
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: white; padding: 20px; margin: 0; }
-    main { max-width: 650px; margin: 0 auto; }
-    h1 { text-align: center; font-size: 28px; margin-bottom: 12px; color: #4dabf7; text-transform: uppercase; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     
-    .usb-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #1e1e1e; border: 2px solid #333; border-radius: 10px;
-      padding: 10px 15px; margin-bottom: 15px;
-    }
-    .usb-status { font-weight: bold; font-size: 15px; }
-    .usb-status.connected { color: #20c997; }
-    .usb-status.disconnected { color: #dc3545; }
-    .usb-btn {
-      background: #0d6efd; border: none; color: white; font-weight: bold;
-      padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #121212;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .kiosk-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 0.8vh 1.5vw;
+      gap: 0.8vh;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 7vh;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 0 10px;
+    }
+
+    h1 { font-size: 2.5vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; }
+    .usb-bar { display: flex; align-items: center; gap: 8px; }
+    .usb-status { font-weight: bold; font-size: 1.8vh; }
+    .usb-status.connected { color: #20c997; }
+    .usb-status.disconnected { color: #dc3545; }
+    .usb-btn { background: #0d6efd; border: none; color: white; font-weight: bold; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 1.6vh; }
+
+    /* LOCATION GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 0.6vh 0.8vw;
+      height: 42vh;
+    }
+
     .loc-btn {
-      background: #1e1e1e; border: 3px solid #333; color: white;
-      padding: 22px 10px; font-size: 20px; font-weight: bold;
-      border-radius: 12px; text-align: center; cursor: pointer;
+      background: #1e1e1e;
+      border: 2px solid #333;
+      color: white;
+      font-size: 2.1vh;
+      font-weight: bold;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
     }
-    .loc-btn.active { background: #0d6efd; border-color: #6ea8fe; transform: scale(0.98); }
-    
+
+    .loc-btn.active {
+      background: #0d6efd;
+      border-color: #6ea8fe;
+      box-shadow: 0 0 8px rgba(13, 110, 253, 0.5);
+    }
+
+    /* INPUT ROW */
     .input-card {
-      background: #1a1a1a; border: 2px solid #333; border-radius: 12px;
-      padding: 18px; margin-bottom: 15px; text-align: center;
+      height: 14vh;
+      display: flex;
+      gap: 8px;
     }
-    .input-card label { display: block; font-size: 14px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
-    .input-group { display: flex; gap: 10px; }
+
     #manualIdInput {
-      flex: 1; background: #2a2a2a; border: 2px solid #444; color: #fff;
-      font-size: 24px; padding: 12px; border-radius: 8px; text-align: center; outline: none;
+      flex: 1;
+      background: #2a2a2a;
+      border: 2px solid #444;
+      color: #fff;
+      font-size: 3vh;
+      padding: 0 10px;
+      border-radius: 6px;
+      text-align: center;
+      outline: none;
     }
+
     .submit-btn {
-      background: #198754; border: none; color: white; font-size: 20px;
-      font-weight: bold; padding: 0 25px; border-radius: 8px; cursor: pointer;
+      background: #198754;
+      border: none;
+      color: white;
+      font-size: 2.5vh;
+      font-weight: bold;
+      padding: 0 20px;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    
+
+    /* STATUS BAR */
     .status-card {
-      background: #222; border-radius: 12px; padding: 20px;
-      text-align: center; font-size: 19px; border: 2px solid #444; line-height: 1.4;
+      height: 12vh;
+      background: #1e1e1e;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 2vh;
+      border: 1px solid #444;
+      padding: 0 8px;
     }
     .status-card.success { border-color: #198754; background: #0f291e; }
+    .status-card.returned { border-color: #0dcaf0; background: #082d38; }
     .status-card.error { border-color: #dc3545; background: #2c0b0e; }
+
+    /* ACTIVE PASSES PANEL */
+    .active-panel {
+      height: 21vh;
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .active-header {
+      font-size: 1.6vh;
+      color: #ffc107;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .active-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .pass-chip {
+      background: #2b2b2b;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 1.7vh;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .pass-chip .time { color: #aaa; font-size: 1.4vh; }
   </style>
 </head>
 <body onclick="keepFocus()">
 
-  <main>
-    <h1>MR. CARNEAL - HALL PASS STATION</h1>
-
-    <div class="usb-bar">
-      <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
-      <button type="button" class="usb-btn" onclick="connectPrinter()">Connect Printer</button>
-    </div>
+  <div class="kiosk-container">
+    <header>
+      <h1>MR. CARNEAL - HALL PASS</h1>
+      <div class="usb-bar">
+        <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
+        <button type="button" class="usb-btn" onclick="connectPrinter()">Connect</button>
+      </div>
+    </header>
 
     <div class="grid">
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</button>
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance Office</button>
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher's Room</button>
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</button>
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Student Services')">Student Services</button>
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Library')">Library</button>
-      <button type="button" class="loc-btn" onclick="selectLoc(this, 'Other')" style="grid-column: span 2;">Other</button>
+      <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Services</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
+      <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
     </div>
 
     <div class="input-card">
-      <label for="manualIdInput">Scan Badge or Type Student ID</label>
-      <div class="input-group">
-        <input type="text" id="manualIdInput" placeholder="Scan Badge / Enter ID" autocomplete="off" autofocus>
-        <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
-      </div>
+      <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
+      <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
     </div>
 
     <div id="statusBox" class="status-card">
-      1. Tap a Location Above<br>2. Scan Badge or Type ID &amp; Press Submit
+      1. Tap Location &amp; Scan to Leave &nbsp;|&nbsp; 2. Scan Again to Check Back In
     </div>
-  </main>
+
+    <div class="active-panel">
+      <div class="active-header">Currently Out (<span id="activeCount">0</span>)</div>
+      <div id="activeList" class="active-list">
+        <span style="color:#666; font-size:1.6vh;">No active passes</span>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // PASTE YOUR APPS SCRIPT EXEC URL HERE:
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxhCaXcUN-iAUbXYdpMV1-jJ6l6eE_pf5J-Zc-ulKBPsG3EOQXkYNpV_ioHDCxgpU35FA/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3aNTDlNw2iIIJQc7RaoawkxUveY2kKVkP7v3x0yXGrqnNK0bKiGHFTReRamIKA4PWDA/exec";
 
     let usbDevice = null;
     let endpointOut = null;
     let selectedLocation = "";
+    let activePasses = [];
 
     function keepFocus() {
       const inputField = document.getElementById('manualIdInput');
@@ -101,31 +215,56 @@
         inputField.focus();
       }
     }
-    window.onload = keepFocus;
 
-    // WEBUSB PRINTER LOGIC (Unfiltered so pop-up always appears)
+    // AUTO-CONNECT PRINTER
+    window.addEventListener('DOMContentLoaded', async () => {
+      keepFocus();
+      autoConnectPrinter();
+    });
+
+    async function autoConnectPrinter() {
+      const statusElem = document.getElementById('usbStatus');
+      try {
+        const devices = await navigator.usb.getDevices();
+        if (devices.length > 0) {
+          usbDevice = devices[0];
+          await initializePrinter(usbDevice);
+        }
+      } catch (error) {
+        console.error("Auto-connect error:", error);
+      }
+    }
+
     async function connectPrinter() {
       const statusElem = document.getElementById('usbStatus');
       try {
         usbDevice = await navigator.usb.requestDevice({ filters: [] });
-
-        await usbDevice.open();
-        await usbDevice.selectConfiguration(1);
-        
-        const interfaceObj = usbDevice.configuration.interfaces[0];
-        await usbDevice.claimInterface(interfaceObj.interfaceNumber);
-        
-        endpointOut = interfaceObj.alternate.endpoints.find(e => e.direction === 'out');
-
-        statusElem.className = "usb-status connected";
-        statusElem.innerText = "PRINTER: Connected ✓";
+        await initializePrinter(usbDevice);
       } catch (error) {
-        console.error("USB Error:", error);
         statusElem.className = "usb-status disconnected";
         statusElem.innerText = "PRINTER: " + error.message;
       }
     }
 
+    async function initializePrinter(device) {
+      const statusElem = document.getElementById('usbStatus');
+      await device.open();
+      if (device.configuration === null) await device.selectConfiguration(1);
+      await device.claimInterface(0);
+
+      const interfaces = device.configuration.interfaces;
+      for (let iface of interfaces) {
+        for (let alternate of iface.alternates) {
+          let outEp = alternate.endpoints.find(e => e.direction === 'out');
+          if (outEp) { endpointOut = outEp; break; }
+        }
+      }
+
+      statusElem.className = "usb-status connected";
+      statusElem.innerText = "PRINTER: Connected ✓";
+    }
+
+    // PRINT PASS LOGIC
     async function printPass(studentName, location, timeStr) {
       if (!usbDevice || !endpointOut) return;
 
@@ -135,14 +274,16 @@
       passData += GS + '!\x11' + "HALL PASS\n" + GS + '!\x00';
       passData += "================================\n\n";
       passData += ESC + 'a\x00';
-      passData += `STUDENT:  ${studentName}\n`;
-      passData += `DEST:     ${location}\n`;
-      passData += `ISSUED:   ${timeStr}\n\n`;
+      passData += `STUDENT: ${studentName}\n`;
+      passData += `DEST:    ${location}\n`;
+      passData += `ISSUED:  ${timeStr}\n\n`;
       passData += ESC + 'a\x01' + "--------------------------------\nValid for one-way return\n================================\n";
       passData += '\n\n\n\n' + GS + 'V\x41\x00';
 
       const encoder = new TextEncoder();
-      await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
+      try {
+        await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
+      } catch (err) { console.error("Print failed:", err); }
     }
 
     function selectLoc(element, locName) {
@@ -150,22 +291,47 @@
       element.classList.add('active');
       selectedLocation = locName;
       document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerHTML = `Selected Location: <b>${locName}</b><br>Scan Badge or Press Submit...`;
+      document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Issue Pass`;
       keepFocus();
+    }
+
+    function renderActivePasses() {
+      const listElem = document.getElementById('activeList');
+      const countElem = document.getElementById('activeCount');
+      
+      countElem.innerText = activePasses.length;
+
+      if (activePasses.length === 0) {
+        listElem.innerHTML = `<span style="color:#666; font-size:1.6vh;">No active passes</span>`;
+        return;
+      }
+
+      listElem.innerHTML = activePasses.map(p => `
+        <div class="pass-chip">
+          <b>${p.name}</b> (${p.location})
+          <span class="time">${p.time}</span>
+        </div>
+      `).join('');
     }
 
     function processPass() {
       const inputField = document.getElementById('manualIdInput');
       let studentId = inputField.value.trim();
 
-      if (!selectedLocation || !studentId) {
+      if (!studentId) return;
+
+      // Check locally if student is already active
+      const existingIndex = activePasses.findIndex(p => p.id === studentId);
+
+      // If NOT active and NO location picked, prompt error
+      if (existingIndex === -1 && !selectedLocation) {
         document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "ERROR: Tap a location AND scan/type an ID!";
+        document.getElementById('statusBox').innerText = "ERROR: Tap a location first!";
         return;
       }
 
       document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerText = "Processing & Printing...";
+      document.getElementById('statusBox').innerText = "Communicating with server...";
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -175,20 +341,33 @@
       .then(res => res.json())
       .then(result => {
         if (result.status === "success") {
-          document.getElementById('statusBox').className = "status-card success";
-          document.getElementById('statusBox').innerHTML = `PASS ISSUED & PRINTED!<br><b>${result.name}</b> → ${result.location}`;
-          printPass(result.name, result.location, result.timestamp);
+          if (result.action === "ISSUED") {
+            // Add to active array & print
+            activePasses.push({ id: result.studentId, name: result.name, location: result.location, time: result.timestamp });
+            document.getElementById('statusBox').className = "status-card success";
+            document.getElementById('statusBox').innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
+            printPass(result.name, result.location, result.timestamp);
+          } 
+          else if (result.action === "RETURNED") {
+            // Remove from active array
+            activePasses = activePasses.filter(p => p.id !== result.studentId);
+            document.getElementById('statusBox').className = "status-card returned";
+            document.getElementById('statusBox').innerHTML = `WELCOME BACK! <b>${result.name}</b> checked in.`;
+          }
+
+          renderActivePasses();
         } else {
           document.getElementById('statusBox').className = "status-card error";
           document.getElementById('statusBox').innerText = "ERROR: " + result.message;
         }
 
         inputField.value = '';
+        selectedLocation = "";
+        document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
+
         setTimeout(() => {
-          selectedLocation = "";
-          document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
           document.getElementById('statusBox').className = "status-card";
-          document.getElementById('statusBox').innerHTML = "1. Tap a Location Above<br>2. Scan Badge or Type ID &amp; Press Submit";
+          document.getElementById('statusBox').innerHTML = "1. Tap Location &amp; Scan to Leave &nbsp;|&nbsp; 2. Scan Again to Check Back In";
           keepFocus();
         }, 3000);
       })
