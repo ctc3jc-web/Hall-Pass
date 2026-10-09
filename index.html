@@ -318,11 +318,38 @@
       }
     }
 
-    async function initializePrinter(device) {
-      const statusElem = document.getElementById('usbStatus');
-      await device.open();
-      if (device.configuration === null) await device.selectConfiguration(1);
-      await device.claimInterface(0);
+   async function initializePrinter(device) {
+  const statusElem = document.getElementById('usbStatus');
+  
+  await device.open();
+  
+  if (device.configuration === null) {
+    await device.selectConfiguration(1);
+  }
+
+  try {
+    // Attempt to claim interface 0
+    await device.claimInterface(0);
+  } catch (err) {
+    console.warn("Claim interface failed, attempting release & retry:", err);
+    // If locked, attempt resetting the device interface before claiming again
+    try {
+      await device.releaseInterface(0);
+    } catch (e) { /* ignore if wasn't claimed */ }
+    await device.claimInterface(0);
+  }
+
+  const interfaces = device.configuration.interfaces;
+  for (let iface of interfaces) {
+    for (let alternate of iface.alternates) {
+      let outEp = alternate.endpoints.find(e => e.direction === 'out');
+      if (outEp) { endpointOut = outEp; break; }
+    }
+  }
+
+  statusElem.className = "usb-status connected";
+  statusElem.innerText = "PRINTER: Connected ✓";
+}
 
       const interfaces = device.configuration.interfaces;
       for (let iface of interfaces) {
