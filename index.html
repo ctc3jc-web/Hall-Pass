@@ -6,7 +6,7 @@
   <title>Hall Pass Kiosk</title>
   
   <!-- Web App Manifest for Full-Screen Mode -->
-  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Hall%20Pass%20Kiosk%22,%22short_name%22:%22HallPass%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23121212%22,%22theme_color%22:%22%23121212%22}">
+  <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -228,8 +228,8 @@
         <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Services</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Student Services</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'TLC')">TLC</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
       </div>
@@ -270,11 +270,8 @@
 
     // REGISTER SERVICE WORKER (Enables Chrome "Install App" capability)
     if ('serviceWorker' in navigator) {
-      const swCode = `self.addEventListener('fetch', function(e) {});`;
-      const blob = new Blob([swCode], { type: 'text/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl).catch(err => console.log('SW error:', err));
-    }
+  navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+}
 
     // FIX FOR CLICKING: Only regain focus if user didn't click a button or input
     function handleGlobalClick(event) {
