@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Hall Pass Kiosk</title>
+  
+  <!-- Web App Manifest for Full-Screen Mode (Hides Address Bar) -->
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Hall%20Pass%20Kiosk%22,%22short_name%22:%22HallPass%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23121212%22,%22theme_color%22:%22%23121212%22}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     
@@ -339,69 +346,3 @@
         </div>
       `).join('');
     }
-
-    function processPass() {
-      const inputField = document.getElementById('manualIdInput');
-      let studentId = inputField.value.trim();
-
-      if (!studentId) return;
-
-      const existingIndex = activePasses.findIndex(p => p.id === studentId);
-
-      if (existingIndex === -1 && !selectedLocation) {
-        document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "ERROR: Tap a location first!";
-        return;
-      }
-
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerText = "Communicating with server...";
-
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ studentId: studentId, location: selectedLocation })
-      })
-      .then(res => res.json())
-      .then(result => {
-        if (result.status === "success") {
-          if (result.action === "ISSUED") {
-            activePasses.push({ id: result.studentId, name: result.name, location: result.location, time: result.timestamp });
-            document.getElementById('statusBox').className = "status-card success";
-            document.getElementById('statusBox').innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
-            printPass(result.name, result.location, result.timestamp);
-          } 
-          else if (result.action === "RETURNED") {
-            activePasses = activePasses.filter(p => p.id !== result.studentId);
-            document.getElementById('statusBox').className = "status-card returned";
-            document.getElementById('statusBox').innerHTML = `WELCOME BACK! <b>${result.name}</b> checked in.`;
-          }
-
-          renderActivePasses();
-        } else {
-          document.getElementById('statusBox').className = "status-card error";
-          document.getElementById('statusBox').innerText = "ERROR: " + result.message;
-        }
-
-        inputField.value = '';
-        selectedLocation = "";
-        document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
-
-        setTimeout(() => {
-          document.getElementById('statusBox').className = "status-card";
-          document.getElementById('statusBox').innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In";
-          keepFocus();
-        }, 3000);
-      })
-      .catch(err => {
-        document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "NETWORK ERROR: " + err.message;
-      });
-    }
-
-    document.getElementById('manualIdInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') processPass();
-    });
-  </script>
-</body>
-</html>
