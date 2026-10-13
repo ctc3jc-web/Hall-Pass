@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.0.8</title>
+  <title>Hall Pass Kiosk v1.0.9</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,7 +27,7 @@
       display: flex;
       width: 100vw;
       height: 100vh;
-      padding: 0.8vh 1vw;
+      padding: 1vh 1vw;
       gap: 1vw;
     }
 
@@ -35,7 +35,7 @@
       width: 70%;
       display: flex;
       flex-direction: column;
-      gap: 1vh;
+      gap: 1.5vh;
     }
 
     .right-side {
@@ -43,7 +43,7 @@
       background: #181818;
       border: 2px solid #333;
       border-radius: 8px;
-      padding: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
     }
@@ -87,38 +87,95 @@
       font-size: 2vh; 
     }
 
-    .mode-toggle {
+    /* SCREEN MANAGEMENT */
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 1.5vh;
+      height: 85vh;
+    }
+    .screen.active-screen {
       display: flex;
-      gap: 10px;
-      height: 10vh;
     }
 
-    .mode-btn {
+    /* SCREEN 1: LANDING PAGE */
+    .welcome-card {
+      background: #1e1e1e;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 2vh 2vw;
+      text-align: center;
+    }
+    .welcome-card h2 { font-size: 4.5vh; color: #ffc107; margin-bottom: 0.5vh; }
+    .welcome-card p { font-size: 2.6vh; color: #ccc; }
+
+    .action-choice-container {
+      display: flex;
+      gap: 1.5vw;
       flex: 1;
-      background: #222;
-      border: 3px solid #444;
-      color: #aaa;
-      font-size: 3.2vh;
+    }
+
+    .choice-btn {
+      flex: 1;
+      border: 4px solid #444;
+      border-radius: 12px;
+      color: white;
+      font-size: 4.5vh;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5vh;
+      transition: all 0.2s ease;
+    }
+    .choice-btn.leave { background: #0d6efd; border-color: #6ea8fe; }
+    .choice-btn.return { background: #198754; border-color: #75b798; }
+    .choice-btn span { font-size: 2.6vh; font-weight: 600; opacity: 0.9; }
+
+    .landing-bottom-bar {
+      height: 12vh;
+      display: flex;
+      gap: 10px;
+    }
+
+    .reprint-btn {
+      flex: 1;
+      background: #ffc107;
+      color: #000;
+      border: none;
+      font-size: 3vh;
       font-weight: 900;
       border-radius: 8px;
       cursor: pointer;
+    }
+    .reprint-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+    /* SCREEN 2: PROCESS PASS */
+    .nav-bar {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      height: 8vh;
     }
 
-    .mode-btn.selected-leave {
-      background: #0d6efd;
+    .back-btn {
+      background: #6c757d;
+      border: none;
       color: white;
-      border-color: #6ea8fe;
-      box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
+      font-size: 2.6vh;
+      font-weight: 900;
+      padding: 0 20px;
+      height: 100%;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
-    .mode-btn.selected-return {
-      background: #198754;
-      color: white;
-      border-color: #75b798;
-      box-shadow: 0 0 16px rgba(25, 135, 84, 0.8);
+    .mode-indicator {
+      font-size: 3.5vh;
+      font-weight: 900;
+      color: #4dabf7;
     }
 
     .grid {
@@ -126,19 +183,14 @@
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 1vh 1vw;
-      height: 38vh;
-    }
-
-    .grid.disabled {
-      opacity: 0.3;
-      pointer-events: none;
+      height: 42vh;
     }
 
     .loc-btn {
       background: #1e1e1e;
       border: 3px solid #444;
       color: white;
-      font-size: 3.5vh;
+      font-size: 3.2vh;
       font-weight: 900;
       border-radius: 10px;
       display: flex;
@@ -195,14 +247,8 @@
       cursor: pointer;
     }
 
-    .action-row {
-      display: flex;
-      gap: 10px;
-      height: 14vh;
-    }
-
     .status-card {
-      flex: 1;
+      height: 12vh;
       background: #1e1e1e;
       border-radius: 8px;
       display: flex;
@@ -218,18 +264,7 @@
     .status-card.returned { border-color: #0dcaf0; background: #082d38; }
     .status-card.error { border-color: #dc3545; background: #2c0b0e; }
 
-    .reprint-btn {
-      background: #ffc107;
-      color: #000;
-      border: none;
-      font-size: 2.4vh;
-      font-weight: 900;
-      padding: 0 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .reprint-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
-
+    /* RIGHT SIDE: ACTIVE QUEUE */
     .active-header {
       font-size: 3vh;
       color: #ffc107;
@@ -246,7 +281,7 @@
       flex-direction: column;
       gap: 10px;
       flex: 1;
-      max-height: 78vh;
+      max-height: 85vh;
       overflow-y: hidden;
     }
 
@@ -254,10 +289,10 @@
       background: #2b2b2b;
       border: 3px solid #ffc107;
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
     .pass-chip .name { font-size: 2.8vh; font-weight: bold; color: #fff; }
@@ -267,11 +302,13 @@
 <body>
 
   <div class="kiosk-container">
+    
+    <!-- LEFT SIDE -->
     <div class="left-side">
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.0.8</span>
+          <span class="version-tag">v1.0.9</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -279,44 +316,71 @@
         </div>
       </header>
 
-      <div class="mode-toggle">
-        <button type="button" id="btnModeLeave" class="mode-btn selected-leave" onclick="setMode('LEAVE')">🚶‍♂️ 1. LEAVING CLASS</button>
-        <button type="button" id="btnModeReturn" class="mode-btn" onclick="setMode('RETURN')">🏠 1. RETURNING / CHECK-IN</button>
-      </div>
-
-      <div id="locationGrid" class="grid">
-        <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Services</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
-      </div>
-
-      <div class="input-card">
-        <input type="text" id="manualIdInput" placeholder="2. Scan Badge Here" autocomplete="off" autofocus>
-        <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
-        <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
-      </div>
-
-      <div class="action-row">
-        <div id="statusBox" class="status-card">
-          Select Mode $\rightarrow$ Select Location $\rightarrow$ Scan Badge
+      <!-- SCREEN 1: LANDING PAGE -->
+      <div id="screen1" class="screen active-screen">
+        <div class="welcome-card">
+          <h2>PLEASE SELECT AN OPTION BELOW</h2>
+          <p>Touch a button to begin</p>
         </div>
-        <button type="button" id="reprintBtn" class="reprint-btn" onclick="reprintLastPass()" disabled>
-          🔄 REPRINT PASS
-        </button>
+
+        <div class="action-choice-container">
+          <button type="button" class="choice-btn leave" onclick="goToPassScreen('LEAVE')">
+            🚶‍♂️ LEAVING CLASS
+            <span>Select destination &amp; scan badge</span>
+          </button>
+          
+          <button type="button" class="choice-btn return" onclick="goToPassScreen('RETURN')">
+            🏠 RETURNING / CHECK-IN
+            <span>Scan badge to return</span>
+          </button>
+        </div>
+
+        <div class="landing-bottom-bar">
+          <button type="button" id="reprintBtn" class="reprint-btn" onclick="reprintLastPass()" disabled>
+            🔄 REPRINT LAST PASS
+          </button>
+        </div>
       </div>
+
+      <!-- SCREEN 2: PROCESS PASS -->
+      <div id="screen2" class="screen">
+        <div class="nav-bar">
+          <button type="button" class="back-btn" onclick="goToLanding()">⬅ CANCEL / BACK</button>
+          <div id="modeIndicator" class="mode-indicator">LEAVING CLASS</div>
+        </div>
+
+        <div id="locationGrid" class="grid">
+          <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Student Services</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Library')">Library</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Nurse')">Nurse</div>
+          <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
+        </div>
+
+        <div class="input-card">
+          <input type="text" id="manualIdInput" placeholder="Scan Badge Here" autocomplete="off">
+          <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
+          <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
+        </div>
+
+        <div id="statusBox" class="status-card">
+          Select Location &amp; Scan Badge
+        </div>
+      </div>
+
     </div>
 
+    <!-- RIGHT SIDE: CURRENTLY OUT QUEUE -->
     <div class="right-side">
       <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>/4)</div>
       <div id="activeList" class="active-list">
         <span style="color:#666; font-size:2.8vh; text-align:center; margin-top:20px;">No active passes</span>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -336,38 +400,49 @@
 
     function keepFocus() {
       const inputField = document.getElementById('manualIdInput');
-      if (inputField) inputField.focus();
+      if (inputField && document.getElementById('screen2').classList.contains('active-screen')) {
+        inputField.focus();
+      }
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
-      keepFocus();
       autoConnectPrinter();
       fetchActivePassesFromSheet();
-      setInterval(fetchActivePassesFromSheet, 2000); // Poll sheet every 4 seconds
+      setInterval(fetchActivePassesFromSheet, 2000); // 2-second live sync
     });
 
-    function setMode(mode) {
+    function goToPassScreen(mode) {
       currentMode = mode;
-      const btnLeave = document.getElementById('btnModeLeave');
-      const btnReturn = document.getElementById('btnModeReturn');
-      const grid = document.getElementById('locationGrid');
-      const statusBox = document.getElementById('statusBox');
-
       selectedLocation = "";
       document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
 
+      document.getElementById('screen1').classList.remove('active-screen');
+      document.getElementById('screen2').classList.add('active-screen');
+
+      const grid = document.getElementById('locationGrid');
+      const indicator = document.getElementById('modeIndicator');
+      const statusBox = document.getElementById('statusBox');
+
       if (mode === "LEAVE") {
-        btnLeave.className = "mode-btn selected-leave";
-        btnReturn.className = "mode-btn";
-        grid.classList.remove('disabled');
-        statusBox.innerText = "Select Location, then Scan Badge to Leave";
+        indicator.innerText = "🚶‍♂️ LEAVING CLASS";
+        indicator.style.color = "#0d6efd";
+        grid.style.display = "grid";
+        statusBox.innerText = "Select Location & Scan Badge";
       } else {
-        btnReturn.className = "mode-btn selected-return";
-        btnLeave.className = "mode-btn";
-        grid.classList.add('disabled');
-        statusBox.innerText = "Scan Badge to Return to Class";
+        indicator.innerText = "🏠 RETURNING TO CLASS";
+        indicator.style.color = "#198754";
+        grid.style.display = "none";
+        statusBox.innerText = "Scan Badge to Return";
       }
+
       keepFocus();
+    }
+
+    function goToLanding() {
+      document.getElementById('screen2').classList.remove('active-screen');
+      document.getElementById('screen1').classList.add('active-screen');
+      document.getElementById('manualIdInput').value = '';
+      selectedLocation = "";
     }
 
     function fetchActivePassesFromSheet() {
@@ -467,12 +542,7 @@
     function reprintLastPass() {
       if (!lastPrintedPass) return;
       printPass(lastPrintedPass.name, lastPrintedPass.location, lastPrintedPass.timestamp);
-      
-      const statusBox = document.getElementById('statusBox');
-      statusBox.className = "status-card success";
-      statusBox.innerHTML = `REPRINTED PASS FOR <b>${lastPrintedPass.name}</b>`;
-      
-      setTimeout(() => { resetStatusBox(); }, 3000);
+      alert(`Reprinted pass for ${lastPrintedPass.name}`);
     }
 
     function selectLoc(element, locName) {
@@ -591,9 +661,8 @@
 
         inputField.value = '';
         selectedLocation = "";
-        document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
 
-        setTimeout(() => { resetStatusBox(); }, 3000);
+        setTimeout(() => { goToLanding(); }, 2500);
       })
       .catch(err => { showError("NETWORK ERROR: " + err.message); });
     }
@@ -602,12 +671,11 @@
       const statusBox = document.getElementById('statusBox');
       statusBox.className = "status-card error";
       statusBox.innerText = msg;
-      setTimeout(() => { resetStatusBox(); }, 3500);
-    }
-
-    function resetStatusBox() {
-      setMode(currentMode);
-      keepFocus();
+      setTimeout(() => {
+        statusBox.className = "status-card";
+        statusBox.innerText = currentMode === "LEAVE" ? "Select Location & Scan Badge" : "Scan Badge to Return";
+        keepFocus();
+      }, 3500);
     }
 
     document.getElementById('manualIdInput').addEventListener('keypress', function(e) {
