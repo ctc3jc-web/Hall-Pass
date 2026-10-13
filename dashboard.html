@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Hall Pass Control Panel</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 800px; margin: 0 auto; }
+    h1 { color: #4dabf7; margin-bottom: 20px; }
+    .card { background: #1e1e1e; border: 1px solid #333; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    .btn { background: #0d6efd; color: #fff; border: none; padding: 10px 16px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .btn-danger { background: #dc3545; }
+    .btn-success { background: #198754; }
+    input, select { background: #2a2a2a; color: #fff; border: 1px solid #555; padding: 10px; font-size: 16px; border-radius: 6px; margin-right: 10px; }
+    .pass-row { display: flex; justify-content: space-between; align-items: center; background: #2b2b2b; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #ffc107; }
+  </style>
+</head>
+<body>
+
+  <h1>Teacher Hall Pass Dashboard</h1>
+
+  <div class="card">
+    <h3>Manual Issue Pass (Remote)</h3>
+    <br>
+    <input type="text" id="tStudentId" placeholder="Student ID or Name">
+    <select id="tLocation">
+      <option value="Restroom">Restroom</option>
+      <option value="Main Office">Main Office</option>
+      <option value="Nurse">Nurse</option>
+      <option value="Library">Library</option>
+      <option value="Services">Services</option>
+      <option value="Other">Other</option>
+    </select>
+    <button class="btn btn-success" onclick="teacherIssuePass()">Issue Pass</button>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+      <h3>Currently Out (<span id="count">0</span>/4)</h3>
+      <button class="btn btn-danger" onclick="clearAll()">Clear All Passes</button>
+    </div>
+    <div id="activeContainer">Loading active passes...</div>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoznmjLIO7d_CLAvthSzToJEDyjcXhcdbxWEdinacJCKXJIRMd7867X5rhXUPNjs2bLQ/exec";
+
+    async function fetchActive() {
+      try {
+        const res = await fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE");
+        const data = await res.json();
+        const container = document.getElementById('activeContainer');
+        document.getElementById('count').innerText = data.activePasses.length;
+
+        if (data.activePasses.length === 0) {
+          container.innerHTML = "<p style='color:#888;'>No active passes right now.</p>";
+          return;
+        }
+
+        container.innerHTML = data.activePasses.map(p => `
+          <div class="pass-row">
+            <div>
+              <strong>${p.name}</strong> — <span style="color:#ffc107;">${p.location}</span> (${p.time})
+            </div>
+            <button class="btn btn-danger" onclick="clearSingle('${p.id}')">Return</button>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      }
+    }
+
+    async function teacherIssuePass() {
+      const idOrName = document.getElementById('tStudentId').value.trim();
+      const location = document.getElementById('tLocation').value;
+      if (!idOrName) return alert("Enter student ID or Name!");
+
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "TEACHER_ISSUE", studentId: idOrName, customName: idOrName, location: location })
+      });
+
+      document.getElementById('tStudentId').value = '';
+      fetchActive();
+    }
+
+    async function clearSingle(studentId) {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "CLEAR_SINGLE", studentId: studentId })
+      });
+      fetchActive();
+    }
+
+    async function clearAll() {
+      if (!confirm("Clear all active passes?")) return;
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "CLEAR_ALL" })
+      });
+      fetchActive();
+    }
+
+    fetchActive();
+    setInterval(fetchActive, 5000); // Auto-refresh every 5s
+  </script>
+</body>
+</html>
