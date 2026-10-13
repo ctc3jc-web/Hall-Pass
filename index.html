@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.0.5</title>
+  <title>Hall Pass Kiosk v1.0.7</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -23,7 +23,6 @@
       touch-action: manipulation;
     }
 
-    /* MAIN CONTAINER: SIDE-BY-SIDE SPLIT */
     .kiosk-container {
       display: flex;
       width: 100vw;
@@ -32,7 +31,6 @@
       gap: 1vw;
     }
 
-    /* LEFT SIDE: 70% WIDTH */
     .left-side {
       width: 70%;
       display: flex;
@@ -40,7 +38,6 @@
       gap: 1vh;
     }
 
-    /* RIGHT SIDE: 30% WIDTH */
     .right-side {
       width: 30%;
       background: #181818;
@@ -51,28 +48,22 @@
       flex-direction: column;
     }
 
-    /* HEADER */
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 11vh;
+      height: 10vh;
       background: #1e1e1e;
       border: 2px solid #333;
       border-radius: 8px;
       padding: 0 16px;
     }
 
-    .title-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    h1 { font-size: 4.2vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
+    .title-group { display: flex; align-items: center; gap: 12px; }
+    h1 { font-size: 3.8vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
     
     .version-tag {
-      font-size: 2.2vh;
+      font-size: 2vh;
       color: #aaa;
       background: #2a2a2a;
       border: 1px solid #555;
@@ -82,7 +73,7 @@
     }
 
     .usb-bar { display: flex; align-items: center; gap: 10px; }
-    .usb-status { font-weight: bold; font-size: 2.5vh; }
+    .usb-status { font-weight: bold; font-size: 2.2vh; }
     .usb-status.connected { color: #20c997; }
     .usb-status.disconnected { color: #dc3545; }
     .usb-btn { 
@@ -93,8 +84,44 @@
       padding: 6px 14px; 
       border-radius: 6px; 
       cursor: pointer; 
-      font-size: 2.2vh; 
+      font-size: 2vh; 
       pointer-events: auto;
+    }
+
+    /* MODE SELECTOR (LEAVING VS RETURNING) */
+    .mode-toggle {
+      display: flex;
+      gap: 10px;
+      height: 10vh;
+    }
+
+    .mode-btn {
+      flex: 1;
+      background: #222;
+      border: 3px solid #444;
+      color: #aaa;
+      font-size: 3.2vh;
+      font-weight: 900;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .mode-btn.selected-leave {
+      background: #0d6efd;
+      color: white;
+      border-color: #6ea8fe;
+      box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
+    }
+
+    .mode-btn.selected-return {
+      background: #198754;
+      color: white;
+      border-color: #75b798;
+      box-shadow: 0 0 16px rgba(25, 135, 84, 0.8);
     }
 
     /* LOCATION GRID (2x4) */
@@ -103,14 +130,20 @@
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 1vh 1vw;
-      height: 44vh;
+      height: 38vh;
+      transition: opacity 0.2s ease;
+    }
+
+    .grid.disabled {
+      opacity: 0.3;
+      pointer-events: none;
     }
 
     .loc-btn {
       background: #1e1e1e;
       border: 3px solid #444;
       color: white;
-      font-size: 3.8vh;
+      font-size: 3.5vh;
       font-weight: 900;
       border-radius: 10px;
       display: flex;
@@ -119,7 +152,6 @@
       text-align: center;
       cursor: pointer;
       user-select: none;
-      pointer-events: auto;
     }
 
     .loc-btn.active {
@@ -130,7 +162,7 @@
 
     /* INPUT ROW & TEMPORARY ID BUTTON */
     .input-card {
-      height: 16vh;
+      height: 15vh;
       display: flex;
       gap: 10px;
     }
@@ -140,45 +172,42 @@
       background: #2a2a2a;
       border: 3px solid #555;
       color: #fff;
-      font-size: 4.5vh;
+      font-size: 4.2vh;
       font-weight: bold;
       padding: 0 16px;
       border-radius: 8px;
       text-align: center;
       outline: none;
-      pointer-events: auto;
     }
 
     .temp-id-btn {
       background: #6f42c1;
       border: none;
       color: white;
-      font-size: 3vh;
+      font-size: 2.8vh;
       font-weight: 900;
       padding: 0 18px;
       border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
-      pointer-events: auto;
     }
 
     .submit-btn {
       background: #198754;
       border: none;
       color: white;
-      font-size: 4vh;
+      font-size: 3.8vh;
       font-weight: 900;
       padding: 0 28px;
       border-radius: 8px;
       cursor: pointer;
-      pointer-events: auto;
     }
 
-    /* STATUS & ACTION ROW */
+    /* STATUS ROW */
     .action-row {
       display: flex;
       gap: 10px;
-      height: 15vh;
+      height: 14vh;
     }
 
     .status-card {
@@ -189,7 +218,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 3.2vh;
+      font-size: 3vh;
       font-weight: bold;
       border: 3px solid #444;
       padding: 0 12px;
@@ -202,7 +231,7 @@
       background: #ffc107;
       color: #000;
       border: none;
-      font-size: 2.6vh;
+      font-size: 2.4vh;
       font-weight: 900;
       padding: 0 18px;
       border-radius: 8px;
@@ -211,7 +240,6 @@
       align-items: center;
       justify-content: center;
       white-space: nowrap;
-      pointer-events: auto;
     }
     .reprint-btn:disabled {
       background: #444;
@@ -219,9 +247,9 @@
       cursor: not-allowed;
     }
 
-    /* RIGHT SIDE: ACTIVE PASSES (MAX 4) */
+    /* RIGHT SIDE: ACTIVE PASSES */
     .active-header {
-      font-size: 3.2vh;
+      font-size: 3vh;
       color: #ffc107;
       font-weight: 900;
       text-transform: uppercase;
@@ -237,7 +265,7 @@
       gap: 10px;
       flex: 1;
       max-height: 68vh;
-      overflow-y: hidden; /* Sized specifically for max 4 passes */
+      overflow-y: hidden;
     }
 
     .pass-chip {
@@ -250,36 +278,32 @@
       gap: 4px;
     }
 
-    .pass-chip .name { font-size: 3vh; font-weight: bold; color: #fff; }
-    .pass-chip .details { font-size: 2.4vh; color: #ddd; display: flex; justify-content: space-between; font-weight: 600; }
+    .pass-chip .name { font-size: 2.8vh; font-weight: bold; color: #fff; }
+    .pass-chip .details { font-size: 2.2vh; color: #ddd; display: flex; justify-content: space-between; font-weight: 600; }
 
-    /* RETURN ALL BUTTON */
     .clear-all-btn {
       margin-top: auto;
       background: #dc3545;
       color: white;
       border: none;
-      font-size: 2.6vh;
+      font-size: 2.4vh;
       font-weight: 900;
       padding: 12px 0;
       border-radius: 8px;
       cursor: pointer;
       width: 100%;
       text-transform: uppercase;
-      pointer-events: auto;
     }
   </style>
 </head>
 <body>
 
   <div class="kiosk-container">
-    
-    <!-- LEFT SIDE: 70% WIDTH -->
     <div class="left-side">
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.0.5</span>
+          <span class="version-tag">v1.0.7</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -287,7 +311,14 @@
         </div>
       </header>
 
-      <div class="grid">
+      <!-- STEP 1: MODE SELECTOR -->
+      <div class="mode-toggle">
+        <button type="button" id="btnModeLeave" class="mode-btn selected-leave" onclick="setMode('LEAVE')">🚶‍♂️ 1. LEAVING CLASS</button>
+        <button type="button" id="btnModeReturn" class="mode-btn" onclick="setMode('RETURN')">🏠 1. RETURNING / CHECK-IN</button>
+      </div>
+
+      <!-- STEP 2: LOCATION GRID -->
+      <div id="locationGrid" class="grid">
         <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
@@ -298,15 +329,16 @@
         <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
       </div>
 
+      <!-- STEP 3: SCAN BADGE -->
       <div class="input-card">
-        <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
+        <input type="text" id="manualIdInput" placeholder="2. Scan Badge Here" autocomplete="off" autofocus>
         <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
         <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
       </div>
 
       <div class="action-row">
         <div id="statusBox" class="status-card">
-          1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Return
+          Select Mode $\rightarrow$ Select Location $\rightarrow$ Scan Badge
         </div>
         <button type="button" id="reprintBtn" class="reprint-btn" onclick="reprintLastPass()" disabled>
           🔄 REPRINT PASS
@@ -314,7 +346,7 @@
       </div>
     </div>
 
-    <!-- RIGHT SIDE: 30% WIDTH (MAX 4 PASSES) -->
+    <!-- RIGHT SIDE: ACTIVE PASSES -->
     <div class="right-side">
       <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>/4)</div>
       <div id="activeList" class="active-list">
@@ -322,7 +354,6 @@
       </div>
       <button type="button" class="clear-all-btn" onclick="returnAllStudents()">CLEAR ALL PASSES</button>
     </div>
-
   </div>
 
   <script>
@@ -330,12 +361,14 @@
 
     let usbDevice = null;
     let endpointOut = null;
+    let currentMode = "LEAVE"; // "LEAVE" or "RETURN"
     let selectedLocation = "";
     let activePasses = [];
     let lastPrintedPass = null;
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+    function cleanId(idStr) {
+      if (!idStr) return "";
+      return String(idStr).trim().replace(/^0+/, '');
     }
 
     function keepFocus() {
@@ -346,7 +379,46 @@
     window.addEventListener('DOMContentLoaded', async () => {
       keepFocus();
       autoConnectPrinter();
+      fetchActivePassesFromSheet();
+      setInterval(fetchActivePassesFromSheet, 10000); // Sync active list with Google Sheets every 10s
     });
+
+    function setMode(mode) {
+      currentMode = mode;
+      const btnLeave = document.getElementById('btnModeLeave');
+      const btnReturn = document.getElementById('btnModeReturn');
+      const grid = document.getElementById('locationGrid');
+      const statusBox = document.getElementById('statusBox');
+
+      selectedLocation = "";
+      document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (mode === "LEAVE") {
+        btnLeave.className = "mode-btn selected-leave";
+        btnReturn.className = "mode-btn";
+        grid.classList.remove('disabled');
+        statusBox.innerText = "Select Location, then Scan Badge to Leave";
+      } else {
+        btnReturn.className = "mode-btn selected-return";
+        btnLeave.className = "mode-btn";
+        grid.classList.add('disabled');
+        statusBox.innerText = "Scan Badge to Return to Class";
+      }
+      keepFocus();
+    }
+
+    async function fetchActivePassesFromSheet() {
+      try {
+        const res = await fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE");
+        const data = await res.json();
+        if (data.status === "success") {
+          activePasses = data.activePasses;
+          renderActivePasses();
+        }
+      } catch (err) {
+        console.error("Sync error:", err);
+      }
+    }
 
     async function autoConnectPrinter() {
       try {
@@ -355,9 +427,7 @@
           usbDevice = devices[0];
           await initializePrinter(usbDevice);
         }
-      } catch (error) {
-        console.error("Auto-connect error:", error);
-      }
+      } catch (error) { console.error("Printer connection error:", error); }
     }
 
     async function connectPrinter() {
@@ -376,9 +446,7 @@
       await device.open();
       if (device.configuration === null) await device.selectConfiguration(1);
       
-      try {
-        await device.claimInterface(0);
-      } catch (err) {
+      try { await device.claimInterface(0); } catch (err) {
         try { await device.releaseInterface(0); } catch(e){}
         await device.claimInterface(0);
       }
@@ -418,9 +486,7 @@
       const encoder = new TextEncoder();
       try {
         await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
-      } catch (err) {
-        console.error("Print failed:", err);
-      }
+      } catch (err) { console.error("Print failed:", err); }
     }
 
     function reprintLastPass() {
@@ -431,19 +497,15 @@
       statusBox.className = "status-card success";
       statusBox.innerHTML = `REPRINTED PASS FOR <b>${lastPrintedPass.name}</b>`;
       
-      setTimeout(() => {
-        resetStatusBox();
-      }, 3000);
+      setTimeout(() => { resetStatusBox(); }, 3000);
     }
 
     function selectLoc(element, locName) {
-      // Check total limit (max 4)
       if (activePasses.length >= 4) {
         showError("LIMIT REACHED: Maximum 4 students out!");
         return;
       }
 
-      // Check bathroom limit (max 2)
       if (locName === "Restroom") {
         const restroomCount = activePasses.filter(p => p.location === "Restroom").length;
         if (restroomCount >= 2) {
@@ -492,22 +554,16 @@
 
     function processPass() {
       const inputField = document.getElementById('manualIdInput');
-      let studentId = inputField.value.trim();
-      if (!studentId) return;
+      let rawId = inputField.value.trim();
+      if (!rawId) return;
 
-      executePassTransaction(studentId, null);
+      executePassTransaction(cleanId(rawId), null);
     }
 
     function executePassTransaction(studentId, customName) {
       const inputField = document.getElementById('manualIdInput');
-      const existingIndex = activePasses.findIndex(p => p.id === studentId);
 
-      // 1. CHECK-IN FLOW (Student is returning)
-      if (existingIndex !== -1) {
-        // Automatically check back in — location is ignored
-      } 
-      // 2. CHECK-OUT FLOW (Student is leaving)
-      else {
+      if (currentMode === "LEAVE") {
         if (!selectedLocation) {
           showError("ERROR: Tap a location first!");
           return;
@@ -532,6 +588,7 @@
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ 
+          mode: currentMode,
           studentId: studentId, 
           location: selectedLocation,
           customName: customName 
@@ -541,22 +598,18 @@
       .then(result => {
         if (result.status === "success") {
           if (result.action === "ISSUED") {
-            activePasses.push({ id: result.studentId, name: result.name, location: result.location, time: result.timestamp });
             document.getElementById('statusBox').className = "status-card success";
             document.getElementById('statusBox').innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
-            
             lastPrintedPass = { name: result.name, location: result.location, timestamp: result.timestamp };
             document.getElementById('reprintBtn').disabled = false;
-
             printPass(result.name, result.location, result.timestamp);
           } 
           else if (result.action === "RETURNED") {
-            activePasses = activePasses.filter(p => p.id !== result.studentId);
             document.getElementById('statusBox').className = "status-card returned";
             document.getElementById('statusBox').innerHTML = `WELCOME BACK! <b>${result.name}</b> checked in.`;
           }
 
-          renderActivePasses();
+          fetchActivePassesFromSheet();
         } else {
           showError("ERROR: " + result.message);
         }
@@ -565,13 +618,9 @@
         selectedLocation = "";
         document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
 
-        setTimeout(() => {
-          resetStatusBox();
-        }, 3000);
+        setTimeout(() => { resetStatusBox(); }, 3000);
       })
-      .catch(err => {
-        showError("NETWORK ERROR: " + err.message);
-      });
+      .catch(err => { showError("NETWORK ERROR: " + err.message); });
     }
 
     function returnAllStudents() {
@@ -586,9 +635,6 @@
         return;
       }
 
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerText = "Clearing all active passes...";
-
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
@@ -596,17 +642,10 @@
       })
       .then(res => res.json())
       .then(result => {
-        activePasses = [];
-        renderActivePasses();
+        fetchActivePassesFromSheet();
         document.getElementById('statusBox').className = "status-card returned";
         document.getElementById('statusBox').innerHTML = "ALL PASSES CLEARED SUCCESSFULLY!";
-        
-        setTimeout(() => {
-          resetStatusBox();
-        }, 3000);
-      })
-      .catch(err => {
-        showError("ERROR CLEARING PASSES: " + err.message);
+        setTimeout(() => { resetStatusBox(); }, 3000);
       });
     }
 
@@ -614,15 +653,11 @@
       const statusBox = document.getElementById('statusBox');
       statusBox.className = "status-card error";
       statusBox.innerText = msg;
-      setTimeout(() => {
-        resetStatusBox();
-      }, 3500);
+      setTimeout(() => { resetStatusBox(); }, 3500);
     }
 
     function resetStatusBox() {
-      const statusBox = document.getElementById('statusBox');
-      statusBox.className = "status-card";
-      statusBox.innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Return";
+      setMode(currentMode);
       keepFocus();
     }
 
