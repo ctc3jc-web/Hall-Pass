@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.0.7</title>
+  <title>Hall Pass Kiosk v1.0.8</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -85,10 +85,8 @@
       border-radius: 6px; 
       cursor: pointer; 
       font-size: 2vh; 
-      pointer-events: auto;
     }
 
-    /* MODE SELECTOR (LEAVING VS RETURNING) */
     .mode-toggle {
       display: flex;
       gap: 10px;
@@ -107,7 +105,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
     }
 
     .mode-btn.selected-leave {
@@ -124,14 +121,12 @@
       box-shadow: 0 0 16px rgba(25, 135, 84, 0.8);
     }
 
-    /* LOCATION GRID (2x4) */
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 1vh 1vw;
       height: 38vh;
-      transition: opacity 0.2s ease;
     }
 
     .grid.disabled {
@@ -151,7 +146,6 @@
       justify-content: center;
       text-align: center;
       cursor: pointer;
-      user-select: none;
     }
 
     .loc-btn.active {
@@ -160,7 +154,6 @@
       box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
     }
 
-    /* INPUT ROW & TEMPORARY ID BUTTON */
     .input-card {
       height: 15vh;
       display: flex;
@@ -189,7 +182,6 @@
       padding: 0 18px;
       border-radius: 8px;
       cursor: pointer;
-      white-space: nowrap;
     }
 
     .submit-btn {
@@ -203,7 +195,6 @@
       cursor: pointer;
     }
 
-    /* STATUS ROW */
     .action-row {
       display: flex;
       gap: 10px;
@@ -236,18 +227,9 @@
       padding: 0 18px;
       border-radius: 8px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      white-space: nowrap;
     }
-    .reprint-btn:disabled {
-      background: #444;
-      color: #888;
-      cursor: not-allowed;
-    }
+    .reprint-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* RIGHT SIDE: ACTIVE PASSES */
     .active-header {
       font-size: 3vh;
       color: #ffc107;
@@ -264,7 +246,7 @@
       flex-direction: column;
       gap: 10px;
       flex: 1;
-      max-height: 68vh;
+      max-height: 78vh;
       overflow-y: hidden;
     }
 
@@ -280,20 +262,6 @@
 
     .pass-chip .name { font-size: 2.8vh; font-weight: bold; color: #fff; }
     .pass-chip .details { font-size: 2.2vh; color: #ddd; display: flex; justify-content: space-between; font-weight: 600; }
-
-    .clear-all-btn {
-      margin-top: auto;
-      background: #dc3545;
-      color: white;
-      border: none;
-      font-size: 2.4vh;
-      font-weight: 900;
-      padding: 12px 0;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      text-transform: uppercase;
-    }
   </style>
 </head>
 <body>
@@ -303,7 +271,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.0.7</span>
+          <span class="version-tag">v1.0.8</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -311,13 +279,11 @@
         </div>
       </header>
 
-      <!-- STEP 1: MODE SELECTOR -->
       <div class="mode-toggle">
         <button type="button" id="btnModeLeave" class="mode-btn selected-leave" onclick="setMode('LEAVE')">🚶‍♂️ 1. LEAVING CLASS</button>
         <button type="button" id="btnModeReturn" class="mode-btn" onclick="setMode('RETURN')">🏠 1. RETURNING / CHECK-IN</button>
       </div>
 
-      <!-- STEP 2: LOCATION GRID -->
       <div id="locationGrid" class="grid">
         <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
@@ -329,7 +295,6 @@
         <div class="loc-btn" onclick="selectLoc(this, 'Other')">Other</div>
       </div>
 
-      <!-- STEP 3: SCAN BADGE -->
       <div class="input-card">
         <input type="text" id="manualIdInput" placeholder="2. Scan Badge Here" autocomplete="off" autofocus>
         <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
@@ -346,13 +311,11 @@
       </div>
     </div>
 
-    <!-- RIGHT SIDE: ACTIVE PASSES -->
     <div class="right-side">
       <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>/4)</div>
       <div id="activeList" class="active-list">
         <span style="color:#666; font-size:2.8vh; text-align:center; margin-top:20px;">No active passes</span>
       </div>
-      <button type="button" class="clear-all-btn" onclick="returnAllStudents()">CLEAR ALL PASSES</button>
     </div>
   </div>
 
@@ -361,7 +324,7 @@
 
     let usbDevice = null;
     let endpointOut = null;
-    let currentMode = "LEAVE"; // "LEAVE" or "RETURN"
+    let currentMode = "LEAVE";
     let selectedLocation = "";
     let activePasses = [];
     let lastPrintedPass = null;
@@ -380,7 +343,7 @@
       keepFocus();
       autoConnectPrinter();
       fetchActivePassesFromSheet();
-      setInterval(fetchActivePassesFromSheet, 10000); // Sync active list with Google Sheets every 10s
+      setInterval(fetchActivePassesFromSheet, 4000); // Poll sheet every 4 seconds
     });
 
     function setMode(mode) {
@@ -407,17 +370,29 @@
       keepFocus();
     }
 
-    async function fetchActivePassesFromSheet() {
-      try {
-        const res = await fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE");
-        const data = await res.json();
+    function fetchActivePassesFromSheet() {
+      fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
+      .then(res => res.json())
+      .then(data => {
         if (data.status === "success") {
           activePasses = data.activePasses;
           renderActivePasses();
+
+          // Check if any pass was issued remotely from Teacher Dashboard needing a print job
+          data.activePasses.forEach(p => {
+            if (p.printPending) {
+              printPass(p.name, p.location, p.time);
+              // Clear flag on server
+              fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ action: "CLEAR_PRINT_FLAG", rowId: p.rowId })
+              });
+            }
+          });
         }
-      } catch (err) {
-        console.error("Sync error:", err);
-      }
+      })
+      .catch(err => console.error("Sync error:", err));
     }
 
     async function autoConnectPrinter() {
@@ -427,7 +402,7 @@
           usbDevice = devices[0];
           await initializePrinter(usbDevice);
         }
-      } catch (error) { console.error("Printer connection error:", error); }
+      } catch (error) {}
     }
 
     async function connectPrinter() {
@@ -486,7 +461,7 @@
       const encoder = new TextEncoder();
       try {
         await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
-      } catch (err) { console.error("Print failed:", err); }
+      } catch (err) {}
     }
 
     function reprintLastPass() {
@@ -621,32 +596,6 @@
         setTimeout(() => { resetStatusBox(); }, 3000);
       })
       .catch(err => { showError("NETWORK ERROR: " + err.message); });
-    }
-
-    function returnAllStudents() {
-      if (activePasses.length === 0) {
-        showError("No active passes to clear!");
-        return;
-      }
-
-      const code = prompt("Enter Admin Code to Return All Students:");
-      if (code !== "aaaa") {
-        alert("Incorrect Admin Code!");
-        return;
-      }
-
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "CLEAR_ALL" })
-      })
-      .then(res => res.json())
-      .then(result => {
-        fetchActivePassesFromSheet();
-        document.getElementById('statusBox').className = "status-card returned";
-        document.getElementById('statusBox').innerHTML = "ALL PASSES CLEARED SUCCESSFULLY!";
-        setTimeout(() => { resetStatusBox(); }, 3000);
-      });
     }
 
     function showError(msg) {
