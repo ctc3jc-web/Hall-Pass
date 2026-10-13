@@ -20,7 +20,7 @@
   <h1>Teacher Hall Pass Dashboard</h1>
 
   <div class="card">
-    <h3>Manual Issue Pass (Remote)</h3>
+    <h3>Manual Remote Pass (Auto-Prints on Kiosk Printer)</h3>
     <br>
     <input type="text" id="tStudentId" placeholder="Student ID or Name">
     <select id="tLocation">
@@ -31,7 +31,7 @@
       <option value="Services">Services</option>
       <option value="Other">Other</option>
     </select>
-    <button class="btn btn-success" onclick="teacherIssuePass()">Issue Pass</button>
+    <button class="btn btn-success" onclick="teacherIssuePass()">Issue &amp; Print Pass</button>
   </div>
 
   <div class="card">
@@ -45,14 +45,14 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoznmjLIO7d_CLAvthSzToJEDyjcXhcdbxWEdinacJCKXJIRMd7867X5rhXUPNjs2bLQ/exec";
 
-    async function fetchActive() {
-      try {
-        const res = await fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE");
-        const data = await res.json();
+    function fetchActive() {
+      fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
+      .then(res => res.json())
+      .then(data => {
         const container = document.getElementById('activeContainer');
         document.getElementById('count').innerText = data.activePasses.length;
 
-        if (data.activePasses.length === 0) {
+        if (!data.activePasses || data.activePasses.length === 0) {
           container.innerHTML = "<p style='color:#888;'>No active passes right now.</p>";
           return;
         }
@@ -65,47 +65,49 @@
             <button class="btn btn-danger" onclick="clearSingle('${p.id}')">Return</button>
           </div>
         `).join('');
-      } catch (err) {
-        console.error("Dashboard error:", err);
-      }
+      })
+      .catch(err => {
+        console.error("Dashboard sync error:", err);
+      });
     }
 
-    async function teacherIssuePass() {
+    function teacherIssuePass() {
       const idOrName = document.getElementById('tStudentId').value.trim();
       const location = document.getElementById('tLocation').value;
       if (!idOrName) return alert("Enter student ID or Name!");
 
-      await fetch(APPS_SCRIPT_URL, {
+      fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "TEACHER_ISSUE", studentId: idOrName, customName: idOrName, location: location })
+      })
+      .then(() => {
+        document.getElementById('tStudentId').value = '';
+        fetchActive();
       });
-
-      document.getElementById('tStudentId').value = '';
-      fetchActive();
     }
 
-    async function clearSingle(studentId) {
-      await fetch(APPS_SCRIPT_URL, {
+    function clearSingle(studentId) {
+      fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "CLEAR_SINGLE", studentId: studentId })
-      });
-      fetchActive();
+      })
+      .then(() => fetchActive());
     }
 
-    async function clearAll() {
+    function clearAll() {
       if (!confirm("Clear all active passes?")) return;
-      await fetch(APPS_SCRIPT_URL, {
+      fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "CLEAR_ALL" })
-      });
-      fetchActive();
+      })
+      .then(() => fetchActive());
     }
 
     fetchActive();
-    setInterval(fetchActive, 5000); // Auto-refresh every 5s
+    setInterval(fetchActive, 4000); // Sync active list every 4 seconds
   </script>
 </body>
 </html>
