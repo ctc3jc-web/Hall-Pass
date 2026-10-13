@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.0.4</title>
+  <title>Hall Pass Kiosk v1.0.5</title>
   
-  <!-- Web App Manifest for Full-Screen Mode -->
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -33,21 +32,21 @@
       gap: 1vw;
     }
 
-    /* LEFT SIDE: 75% WIDTH */
+    /* LEFT SIDE: 70% WIDTH */
     .left-side {
-      width: 75%;
+      width: 70%;
       display: flex;
       flex-direction: column;
-      gap: 0.8vh;
+      gap: 1vh;
     }
 
-    /* RIGHT SIDE: 25% WIDTH */
+    /* RIGHT SIDE: 30% WIDTH */
     .right-side {
-      width: 25%;
+      width: 30%;
       background: #181818;
       border: 2px solid #333;
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
     }
@@ -57,33 +56,33 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 10vh;
+      height: 11vh;
       background: #1e1e1e;
-      border: 1px solid #333;
-      border-radius: 6px;
-      padding: 0 12px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 0 16px;
     }
 
     .title-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
-    h1 { font-size: 3.5vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
+    h1 { font-size: 4.2vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
     
     .version-tag {
-      font-size: 1.8vh;
-      color: #888;
+      font-size: 2.2vh;
+      color: #aaa;
       background: #2a2a2a;
-      border: 1px solid #444;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
+      border: 1px solid #555;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
     }
 
-    .usb-bar { display: flex; align-items: center; gap: 8px; }
-    .usb-status { font-weight: bold; font-size: 2.2vh; }
+    .usb-bar { display: flex; align-items: center; gap: 10px; }
+    .usb-status { font-weight: bold; font-size: 2.5vh; }
     .usb-status.connected { color: #20c997; }
     .usb-status.disconnected { color: #dc3545; }
     .usb-btn { 
@@ -91,10 +90,10 @@
       border: none; 
       color: white; 
       font-weight: bold; 
-      padding: 4px 10px; 
-      border-radius: 4px; 
+      padding: 6px 14px; 
+      border-radius: 6px; 
       cursor: pointer; 
-      font-size: 2vh; 
+      font-size: 2.2vh; 
       pointer-events: auto;
     }
 
@@ -103,17 +102,17 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      gap: 0.8vh 0.8vw;
-      height: 48vh;
+      gap: 1vh 1vw;
+      height: 44vh;
     }
 
     .loc-btn {
       background: #1e1e1e;
-      border: 2px solid #444;
+      border: 3px solid #444;
       color: white;
-      font-size: 3vh;
-      font-weight: 800;
-      border-radius: 8px;
+      font-size: 3.8vh;
+      font-weight: 900;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -126,27 +125,40 @@
     .loc-btn.active {
       background: #0d6efd;
       border-color: #6ea8fe;
-      box-shadow: 0 0 12px rgba(13, 110, 253, 0.7);
+      box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
     }
 
-    /* INPUT ROW */
+    /* INPUT ROW & TEMPORARY ID BUTTON */
     .input-card {
       height: 16vh;
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
 
     #manualIdInput {
       flex: 1;
       background: #2a2a2a;
-      border: 2px solid #555;
+      border: 3px solid #555;
       color: #fff;
-      font-size: 4vh;
+      font-size: 4.5vh;
       font-weight: bold;
-      padding: 0 12px;
-      border-radius: 6px;
+      padding: 0 16px;
+      border-radius: 8px;
       text-align: center;
       outline: none;
+      pointer-events: auto;
+    }
+
+    .temp-id-btn {
+      background: #6f42c1;
+      border: none;
+      color: white;
+      font-size: 3vh;
+      font-weight: 900;
+      padding: 0 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
       pointer-events: auto;
     }
 
@@ -154,10 +166,10 @@
       background: #198754;
       border: none;
       color: white;
-      font-size: 3.5vh;
+      font-size: 4vh;
       font-weight: 900;
-      padding: 0 24px;
-      border-radius: 6px;
+      padding: 0 28px;
+      border-radius: 8px;
       cursor: pointer;
       pointer-events: auto;
     }
@@ -165,22 +177,22 @@
     /* STATUS & ACTION ROW */
     .action-row {
       display: flex;
-      gap: 8px;
-      height: 14vh;
+      gap: 10px;
+      height: 15vh;
     }
 
     .status-card {
       flex: 1;
       background: #1e1e1e;
-      border-radius: 6px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 2.6vh;
+      font-size: 3.2vh;
       font-weight: bold;
-      border: 2px solid #444;
-      padding: 0 8px;
+      border: 3px solid #444;
+      padding: 0 12px;
     }
     .status-card.success { border-color: #198754; background: #0f291e; }
     .status-card.returned { border-color: #0dcaf0; background: #082d38; }
@@ -190,10 +202,10 @@
       background: #ffc107;
       color: #000;
       border: none;
-      font-size: 2.3vh;
+      font-size: 2.6vh;
       font-weight: 900;
-      padding: 0 16px;
-      border-radius: 6px;
+      padding: 0 18px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -207,50 +219,67 @@
       cursor: not-allowed;
     }
 
-    /* RIGHT SIDE: ACTIVE PASSES */
+    /* RIGHT SIDE: ACTIVE PASSES (MAX 4) */
     .active-header {
-      font-size: 2.5vh;
+      font-size: 3.2vh;
       color: #ffc107;
       font-weight: 900;
       text-transform: uppercase;
-      padding-bottom: 6px;
-      border-bottom: 2px solid #333;
-      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid #333;
+      margin-bottom: 10px;
       text-align: center;
     }
 
     .active-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
+      gap: 10px;
       flex: 1;
+      max-height: 68vh;
+      overflow-y: hidden; /* Sized specifically for max 4 passes */
     }
 
     .pass-chip {
       background: #2b2b2b;
-      border: 2px solid #ffc107;
-      border-radius: 6px;
-      padding: 6px 8px;
+      border: 3px solid #ffc107;
+      border-radius: 8px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
 
-    .pass-chip .name { font-size: 2.3vh; font-weight: bold; color: #fff; }
-    .pass-chip .details { font-size: 1.8vh; color: #bbb; display: flex; justify-content: space-between; }
+    .pass-chip .name { font-size: 3vh; font-weight: bold; color: #fff; }
+    .pass-chip .details { font-size: 2.4vh; color: #ddd; display: flex; justify-content: space-between; font-weight: 600; }
+
+    /* RETURN ALL BUTTON */
+    .clear-all-btn {
+      margin-top: auto;
+      background: #dc3545;
+      color: white;
+      border: none;
+      font-size: 2.6vh;
+      font-weight: 900;
+      padding: 12px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      text-transform: uppercase;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
 
   <div class="kiosk-container">
     
-    <!-- LEFT SIDE: 75% WIDTH -->
+    <!-- LEFT SIDE: 70% WIDTH -->
     <div class="left-side">
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.0.4</span>
+          <span class="version-tag">v1.0.5</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -271,25 +300,27 @@
 
       <div class="input-card">
         <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
+        <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
         <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
       </div>
 
       <div class="action-row">
         <div id="statusBox" class="status-card">
-          1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In
+          1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Return
         </div>
         <button type="button" id="reprintBtn" class="reprint-btn" onclick="reprintLastPass()" disabled>
-          🔄 REPRINT LAST PASS
+          🔄 REPRINT PASS
         </button>
       </div>
     </div>
 
-    <!-- RIGHT SIDE: 25% WIDTH -->
+    <!-- RIGHT SIDE: 30% WIDTH (MAX 4 PASSES) -->
     <div class="right-side">
-      <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>)</div>
+      <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>/4)</div>
       <div id="activeList" class="active-list">
-        <span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>
+        <span style="color:#666; font-size:2.8vh; text-align:center; margin-top:20px;">No active passes</span>
       </div>
+      <button type="button" class="clear-all-btn" onclick="returnAllStudents()">CLEAR ALL PASSES</button>
     </div>
 
   </div>
@@ -303,7 +334,6 @@
     let activePasses = [];
     let lastPrintedPass = null;
 
-    // REGISTER SERVICE WORKER
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
     }
@@ -313,14 +343,12 @@
       if (inputField) inputField.focus();
     }
 
-    // AUTO-CONNECT PRINTER
     window.addEventListener('DOMContentLoaded', async () => {
       keepFocus();
       autoConnectPrinter();
     });
 
     async function autoConnectPrinter() {
-      const statusElem = document.getElementById('usbStatus');
       try {
         const devices = await navigator.usb.getDevices();
         if (devices.length > 0) {
@@ -351,7 +379,6 @@
       try {
         await device.claimInterface(0);
       } catch (err) {
-        console.warn("Claim error, retrying:", err);
         try { await device.releaseInterface(0); } catch(e){}
         await device.claimInterface(0);
       }
@@ -368,7 +395,6 @@
       statusElem.innerText = "PRINTER: Connected ✓";
     }
 
-    // PRINT PASS LOGIC
     async function printPass(studentName, location, timeStr) {
       if (!usbDevice || !endpointOut) return;
 
@@ -406,13 +432,26 @@
       statusBox.innerHTML = `REPRINTED PASS FOR <b>${lastPrintedPass.name}</b>`;
       
       setTimeout(() => {
-        statusBox.className = "status-card";
-        statusBox.innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In";
-        keepFocus();
+        resetStatusBox();
       }, 3000);
     }
 
     function selectLoc(element, locName) {
+      // Check total limit (max 4)
+      if (activePasses.length >= 4) {
+        showError("LIMIT REACHED: Maximum 4 students out!");
+        return;
+      }
+
+      // Check bathroom limit (max 2)
+      if (locName === "Restroom") {
+        const restroomCount = activePasses.filter(p => p.location === "Restroom").length;
+        if (restroomCount >= 2) {
+          showError("LIMIT REACHED: Maximum 2 Bathroom passes!");
+          return;
+        }
+      }
+
       document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
       selectedLocation = locName;
@@ -428,7 +467,7 @@
       countElem.innerText = activePasses.length;
 
       if (activePasses.length === 0) {
-        listElem.innerHTML = `<span style="color:#666; font-size:2vh; text-align:center; margin-top:10px;">No active passes</span>`;
+        listElem.innerHTML = `<span style="color:#666; font-size:2.8vh; text-align:center; margin-top:20px;">No active passes</span>`;
         return;
       }
 
@@ -443,18 +482,47 @@
       `).join('');
     }
 
+    function handleTempId() {
+      const studentName = prompt("Enter Student's First and Last Name:");
+      if (!studentName || !studentName.trim()) return;
+
+      const tempId = "TEMP-" + Date.now().toString().slice(-6);
+      executePassTransaction(tempId, studentName.trim());
+    }
+
     function processPass() {
       const inputField = document.getElementById('manualIdInput');
       let studentId = inputField.value.trim();
-
       if (!studentId) return;
 
+      executePassTransaction(studentId, null);
+    }
+
+    function executePassTransaction(studentId, customName) {
+      const inputField = document.getElementById('manualIdInput');
       const existingIndex = activePasses.findIndex(p => p.id === studentId);
 
-      if (existingIndex === -1 && !selectedLocation) {
-        document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "ERROR: Tap a location first!";
-        return;
+      // 1. CHECK-IN FLOW (Student is returning)
+      if (existingIndex !== -1) {
+        // Automatically check back in — location is ignored
+      } 
+      // 2. CHECK-OUT FLOW (Student is leaving)
+      else {
+        if (!selectedLocation) {
+          showError("ERROR: Tap a location first!");
+          return;
+        }
+        if (activePasses.length >= 4) {
+          showError("LIMIT REACHED: Maximum 4 passes allowed!");
+          return;
+        }
+        if (selectedLocation === "Restroom") {
+          const restroomCount = activePasses.filter(p => p.location === "Restroom").length;
+          if (restroomCount >= 2) {
+            showError("LIMIT REACHED: Maximum 2 Bathroom passes!");
+            return;
+          }
+        }
       }
 
       document.getElementById('statusBox').className = "status-card";
@@ -463,7 +531,11 @@
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ studentId: studentId, location: selectedLocation })
+        body: JSON.stringify({ 
+          studentId: studentId, 
+          location: selectedLocation,
+          customName: customName 
+        })
       })
       .then(res => res.json())
       .then(result => {
@@ -486,8 +558,7 @@
 
           renderActivePasses();
         } else {
-          document.getElementById('statusBox').className = "status-card error";
-          document.getElementById('statusBox').innerText = "ERROR: " + result.message;
+          showError("ERROR: " + result.message);
         }
 
         inputField.value = '';
@@ -495,15 +566,64 @@
         document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
 
         setTimeout(() => {
-          document.getElementById('statusBox').className = "status-card";
-          document.getElementById('statusBox').innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Check Back In";
-          keepFocus();
+          resetStatusBox();
         }, 3000);
       })
       .catch(err => {
-        document.getElementById('statusBox').className = "status-card error";
-        document.getElementById('statusBox').innerText = "NETWORK ERROR: " + err.message;
+        showError("NETWORK ERROR: " + err.message);
       });
+    }
+
+    function returnAllStudents() {
+      if (activePasses.length === 0) {
+        showError("No active passes to clear!");
+        return;
+      }
+
+      const code = prompt("Enter Admin Code to Return All Students:");
+      if (code !== "aaaa") {
+        alert("Incorrect Admin Code!");
+        return;
+      }
+
+      document.getElementById('statusBox').className = "status-card";
+      document.getElementById('statusBox').innerText = "Clearing all active passes...";
+
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "CLEAR_ALL" })
+      })
+      .then(res => res.json())
+      .then(result => {
+        activePasses = [];
+        renderActivePasses();
+        document.getElementById('statusBox').className = "status-card returned";
+        document.getElementById('statusBox').innerHTML = "ALL PASSES CLEARED SUCCESSFULLY!";
+        
+        setTimeout(() => {
+          resetStatusBox();
+        }, 3000);
+      })
+      .catch(err => {
+        showError("ERROR CLEARING PASSES: " + err.message);
+      });
+    }
+
+    function showError(msg) {
+      const statusBox = document.getElementById('statusBox');
+      statusBox.className = "status-card error";
+      statusBox.innerText = msg;
+      setTimeout(() => {
+        resetStatusBox();
+      }, 3500);
+    }
+
+    function resetStatusBox() {
+      const statusBox = document.getElementById('statusBox');
+      statusBox.className = "status-card";
+      statusBox.innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Return";
+      keepFocus();
     }
 
     document.getElementById('manualIdInput').addEventListener('keypress', function(e) {
