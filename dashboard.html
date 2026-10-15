@@ -8,11 +8,13 @@
     body { font-family: system-ui, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 800px; margin: 0 auto; }
     h1 { color: #4dabf7; margin-bottom: 20px; }
     .card { background: #1e1e1e; border: 1px solid #333; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
-    .btn { background: #0d6efd; color: #fff; border: none; padding: 10px 16px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .btn { background: #0d6efd; color: #fff; border: none; padding: 8px 14px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; }
     .btn-danger { background: #dc3545; }
     .btn-success { background: #198754; }
+    .btn-warning { background: #ffc107; color: #000; }
     input, select { background: #2a2a2a; color: #fff; border: 1px solid #555; padding: 10px; font-size: 16px; border-radius: 6px; margin-right: 10px; }
     .pass-row { display: flex; justify-content: space-between; align-items: center; background: #2b2b2b; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #ffc107; }
+    .btn-group { display: flex; gap: 8px; }
   </style>
 </head>
 <body>
@@ -25,6 +27,7 @@
     <input type="text" id="tStudentId" placeholder="Student ID or Name">
     <select id="tLocation">
       <option value="Restroom">Restroom</option>
+      <option value="Attendance Office">Attendance Office</option>
       <option value="Main Office">Main Office</option>
       <option value="Nurse">Nurse</option>
       <option value="Library">Library</option>
@@ -43,7 +46,7 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoznmjLIO7d_CLAvthSzToJEDyjcXhcdbxWEdinacJCKXJIRMd7867X5rhXUPNjs2bLQ/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWLWQ_55UX7Ky5_RmZU3xqC7iNQ5N5JoY6DqqTTJyewg8o-SwzmShcc1pX0d_Oq6S7rA/exec";
 
     function fetchActive() {
       fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
@@ -62,7 +65,10 @@
             <div>
               <strong>${p.name}</strong> — <span style="color:#ffc107;">${p.location}</span> (${p.time})
             </div>
-            <button class="btn btn-danger" onclick="clearSingle('${p.id}')">Return</button>
+            <div class="btn-group">
+              <button class="btn btn-warning" onclick="reprintPass(${p.rowId})">🔄 Reprint</button>
+              <button class="btn btn-danger" onclick="clearSingle('${p.id}')">Return</button>
+            </div>
           </div>
         `).join('');
       })
@@ -87,6 +93,15 @@
       });
     }
 
+    function reprintPass(rowId) {
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "REPRINT_PASS", rowId: rowId })
+      })
+      .then(() => alert("Pass sent to kiosk printer!"));
+    }
+
     function clearSingle(studentId) {
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -107,7 +122,7 @@
     }
 
     fetchActive();
-    setInterval(fetchActive, 2000); // 2-second live sync
+    setInterval(fetchActive, 2000);
   </script>
 </body>
 </html>
