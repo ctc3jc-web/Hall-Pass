@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.1</title>
+  <title>Hall Pass Kiosk v1.1.2</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -87,7 +87,6 @@
       font-size: 2vh; 
     }
 
-    /* LOCATION GRID (2x4) */
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -117,7 +116,6 @@
       box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
     }
 
-    /* INPUT ROW WITH CLEAR BUTTON */
     .input-card {
       height: 14vh;
       display: flex;
@@ -200,7 +198,6 @@
     }
     .reprint-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* RIGHT SIDE: CURRENTLY OUT QUEUE */
     .active-header {
       font-size: 3vh;
       color: #ffc107;
@@ -243,7 +240,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.1</span>
+          <span class="version-tag">v1.1.2</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -292,9 +289,11 @@
 
     let usbDevice = null;
     let endpointOut = null;
+    let interfaceNumber = 0;
     let selectedLocation = "";
     let activePasses = [];
     let lastPrintedPass = null;
+    let isFetching = false;
 
     function cleanId(idStr) {
       if (!idStr) return "";
@@ -303,14 +302,19 @@
 
     function keepFocus() {
       const inputField = document.getElementById('manualIdInput');
-      if (inputField) inputField.focus();
+      if (inputField && document.activeElement !== inputField) {
+        inputField.focus();
+      }
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
       keepFocus();
       autoConnectPrinter();
       fetchActivePassesFromSheet();
-      setInterval(fetchActivePassesFromSheet, 2000);
+      setInterval(fetchActivePassesFromSheet, 1500); // 1.5 second optimized sync loop
+      
+      // Prevent tablet input focus loss
+      document.body.addEventListener('click', () => keepFocus());
     });
 
     function clearForm() {
@@ -321,9 +325,13 @@
     }
 
     function fetchActivePassesFromSheet() {
+      if (isFetching) return; // Prevent request stacking
+      isFetching = true;
+
       fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
       .then(res => res.json())
       .then(data => {
+        isFetching = false;
         if (data.status === "success") {
           activePasses = data.activePasses;
           renderActivePasses();
@@ -340,7 +348,10 @@
           });
         }
       })
-      .catch(err => console.error("Sync error:", err));
+      .catch(err => {
+        isFetching = false;
+        console.error("Sync error:", err);
+      });
     }
 
     async function autoConnectPrinter() {
@@ -366,50 +377,63 @@
 
     async function initializePrinter(device) {
       const statusElem = document.getElementById('usbStatus');
-      await device.open();
-      if (device.configuration === null) await device.selectConfiguration(1);
-      
-      try { await device.claimInterface(0); } catch (err) {
-        try { await device.releaseInterface(0); } catch(e){}
-        await device.claimInterface(0);
-      }
-
-      const interfaces = device.configuration.interfaces;
-      for (let iface of interfaces) {
-        for (let alternate of iface.alternates) {
-          let outEp = alternate.endpoints.find(e => e.direction === 'out');
-          if (outEp) { endpointOut = outEp; break; }
+      try {
+        if (!device.opened) await device.open();
+        if (device.configuration === null) await device.selectConfiguration(1);
+        
+        const interfaces = device.configuration.interfaces;
+        for (let iface of interfaces) {
+          for (let alternate of iface.alternates) {
+            let outEp = alternate.endpoints.find(e => e.direction === 'out');
+            if (outEp) { 
+              endpointOut = outEp; 
+              interfaceNumber = iface.interfaceNumber;
+              break; 
+            }
+          }
         }
-      }
 
-      statusElem.className = "usb-status connected";
-      statusElem.innerText = "PRINTER: Connected ✓";
+        try { await device.claimInterface(interfaceNumber); } catch(e){}
+
+        statusElem.className = "usb-status connected";
+        statusElem.innerText = "PRINTER: Connected ✓";
+      } catch (err) {
+        statusElem.className = "usb-status disconnected";
+        statusElem.innerText = "PRINTER: Connection Failed";
+      }
     }
 
     async function printPass(studentName, location, timeStr) {
       if (!usbDevice || !endpointOut) return;
 
-      const dateStr = new Date().toLocaleDateString('en-US');
-      const ESC = '\x1B', GS = '\x1D';
-
-      let passData = "";
-      passData += ESC + '@' + ESC + '3\x18';
-      passData += ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
-      passData += "--------------------------------\n";
-      passData += GS + '!\x11' + "HALL PASS\n" + GS + '!\x00';
-      passData += "--------------------------------\n";
-      passData += ESC + 'a\x00';
-      passData += `STUDENT: ${studentName}\n`;
-      passData += `DEST:    ${location}\n`;
-      passData += `DATE:    ${dateStr}\n`;
-      passData += `TIME:    ${timeStr}\n`;
-      passData += ESC + 'a\x01' + "--------------------------------\n";
-      passData += '\n\n' + GS + 'V\x41\x00';
-
-      const encoder = new TextEncoder();
       try {
+        // Force re-open and claim interface before printing to guarantee connection stability
+        if (!usbDevice.opened) await usbDevice.open();
+        try { await usbDevice.claimInterface(interfaceNumber); } catch(e){}
+
+        const dateStr = new Date().toLocaleDateString('en-US');
+        const ESC = '\x1B', GS = '\x1D';
+
+        let passData = "";
+        passData += ESC + '@' + ESC + '3\x18';
+        passData += ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
+        passData += "--------------------------------\n";
+        passData += GS + '!\x11' + "HALL PASS\n" + GS + '!\x00';
+        passData += "--------------------------------\n";
+        passData += ESC + 'a\x00';
+        passData += `STUDENT: ${studentName}\n`;
+        passData += `DEST:    ${location}\n`;
+        passData += `DATE:    ${dateStr}\n`;
+        passData += `TIME:    ${timeStr}\n`;
+        passData += ESC + 'a\x01' + "--------------------------------\n";
+        passData += '\n\n' + GS + 'V\x41\x00';
+
+        const encoder = new TextEncoder();
         await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
-      } catch (err) {}
+      } catch (err) {
+        console.error("Thermal print failed, re-initializing printer:", err);
+        autoConnectPrinter(); // Recover USB link on failure
+      }
     }
 
     function reprintLastPass() {
@@ -486,7 +510,7 @@
       const inputField = document.getElementById('manualIdInput');
 
       document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerText = "Communicating with server...";
+      document.getElementById('statusBox').innerText = "Processing...";
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -518,7 +542,7 @@
         }
 
         clearForm();
-        setTimeout(() => { resetStatusBox(); }, 3000);
+        setTimeout(() => { resetStatusBox(); }, 2500);
       })
       .catch(err => { showError("NETWORK ERROR: " + err.message); });
     }
@@ -527,7 +551,7 @@
       const statusBox = document.getElementById('statusBox');
       statusBox.className = "status-card error";
       statusBox.innerText = msg;
-      setTimeout(() => { resetStatusBox(); }, 3500);
+      setTimeout(() => { resetStatusBox(); }, 3000);
     }
 
     function resetStatusBox() {
