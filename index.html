@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.0</title>
+  <title>Hall Pass Kiosk v1.1.1</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -100,7 +100,7 @@
       background: #1e1e1e;
       border: 3px solid #444;
       color: white;
-      font-size: 3.6vh;
+      font-size: 3.5vh;
       font-weight: 900;
       border-radius: 10px;
       display: flex;
@@ -117,7 +117,7 @@
       box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
     }
 
-    /* INPUT ROW WITHOUT SUBMIT BUTTON */
+    /* INPUT ROW WITH CLEAR BUTTON */
     .input-card {
       height: 14vh;
       display: flex;
@@ -137,13 +137,25 @@
       outline: none;
     }
 
+    .clear-btn {
+      background: #dc3545;
+      border: none;
+      color: white;
+      font-size: 3vh;
+      font-weight: 900;
+      padding: 0 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
     .temp-id-btn {
       background: #6f42c1;
       border: none;
       color: white;
       font-size: 3vh;
       font-weight: 900;
-      padding: 0 24px;
+      padding: 0 20px;
       border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
@@ -231,7 +243,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.0</span>
+          <span class="version-tag">v1.1.1</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -241,7 +253,7 @@
 
       <div class="grid">
         <div class="loc-btn" onclick="selectLoc(this, 'Restroom')">Restroom</div>
-        <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance</div>
+        <div class="loc-btn" onclick="selectLoc(this, 'Attendance Office')">Attendance Office</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Teacher\'s Room')">Teacher Room</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Main Office')">Main Office</div>
         <div class="loc-btn" onclick="selectLoc(this, 'Student Services')">Student Services</div>
@@ -252,6 +264,7 @@
 
       <div class="input-card">
         <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
+        <button type="button" class="clear-btn" onclick="clearForm()">CLEAR</button>
         <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
       </div>
 
@@ -299,6 +312,13 @@
       fetchActivePassesFromSheet();
       setInterval(fetchActivePassesFromSheet, 2000);
     });
+
+    function clearForm() {
+      document.getElementById('manualIdInput').value = '';
+      selectedLocation = "";
+      document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
+      resetStatusBox();
+    }
 
     function fetchActivePassesFromSheet() {
       fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
@@ -497,10 +517,7 @@
           showError("ERROR: " + result.message);
         }
 
-        inputField.value = '';
-        selectedLocation = "";
-        document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
-
+        clearForm();
         setTimeout(() => { resetStatusBox(); }, 3000);
       })
       .catch(err => { showError("NETWORK ERROR: " + err.message); });
