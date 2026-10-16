@@ -12,7 +12,8 @@
     .btn-danger { background: #dc3545; }
     .btn-success { background: #198754; }
     .btn-warning { background: #ffc107; color: #000; }
-    input, select { background: #2a2a2a; color: #fff; border: 1px solid #555; padding: 10px; font-size: 16px; border-radius: 6px; margin-right: 10px; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    input, select { background: #2a2a2a; color: #fff; border: 1px solid #555; padding: 10px; font-size: 15px; border-radius: 6px; flex: 1; min-width: 150px; }
     .pass-row { display: flex; justify-content: space-between; align-items: center; background: #2b2b2b; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #ffc107; }
     .btn-group { display: flex; gap: 8px; }
   </style>
@@ -22,19 +23,32 @@
   <h1>Teacher Hall Pass Dashboard</h1>
 
   <div class="card">
-    <h3>Manual Remote Pass (Auto-Prints on Kiosk Printer)</h3>
+    <h3>Issue Pass (Auto-Prints on Kiosk Printer)</h3>
     <br>
-    <input type="text" id="tStudentId" placeholder="Student ID or Name">
-    <select id="tLocation">
-      <option value="Restroom">Restroom</option>
-      <option value="Attendance Office">Attendance Office</option>
-      <option value="Main Office">Main Office</option>
-      <option value="Nurse">Nurse</option>
-      <option value="Library">Library</option>
-      <option value="Student Services">Student Services</option>
-      <option value="Other">Other</option>
-    </select>
-    <button class="btn btn-success" onclick="teacherIssuePass()">Issue &amp; Print Pass</button>
+    <div class="form-row">
+      <input type="text" id="tStudentId" placeholder="Student ID or Name">
+      <select id="tPassType">
+        <option value="STANDARD">Standard Out Pass</option>
+        <option value="LATE_PASS">One-Way Late Pass / Tardy Slip</option>
+        <option value="FUTURE_PASS">Future Pass (Specific Date/Period)</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <select id="tLocation" onchange="checkCustomRoom(this.value)">
+        <option value="Restroom">Restroom</option>
+        <option value="Attendance Office">Attendance Office</option>
+        <option value="Teacher's Room">Teacher's Room (Specify below)</option>
+        <option value="Main Office">Main Office</option>
+        <option value="Nurse">Nurse</option>
+        <option value="Library">Library</option>
+        <option value="Student Services">Student Services</option>
+        <option value="Other">Other</option>
+      </select>
+      <input type="text" id="tCustomNote" placeholder="Notes / Teacher Name / Period / Date">
+    </div>
+
+    <button class="btn btn-success" style="width: 100%; margin-top: 6px;" onclick="teacherIssuePass()">Issue &amp; Print Pass</button>
   </div>
 
   <div class="card">
@@ -47,6 +61,16 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWLWQ_55UX7Ky5_RmZU3xqC7iNQ5N5JoY6DqqTTJyewg8o-SwzmShcc1pX0d_Oq6S7rA/exec";
+
+    function checkCustomRoom(val) {
+      const noteInput = document.getElementById('tCustomNote');
+      if (val === "Teacher's Room") {
+        noteInput.placeholder = "Enter Teacher Name or Room #";
+        noteInput.focus();
+      } else {
+        noteInput.placeholder = "Notes / Period / Date";
+      }
+    }
 
     function fetchActive() {
       fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
@@ -79,16 +103,26 @@
 
     function teacherIssuePass() {
       const idOrName = document.getElementById('tStudentId').value.trim();
+      const passType = document.getElementById('tPassType').value;
       const location = document.getElementById('tLocation').value;
+      const customNote = document.getElementById('tCustomNote').value.trim();
+
       if (!idOrName) return alert("Enter student ID or Name!");
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "TEACHER_ISSUE", studentId: idOrName, customName: idOrName, location: location })
+        body: JSON.stringify({ 
+          action: "TEACHER_ISSUE", 
+          studentId: idOrName, 
+          location: location,
+          passType: passType,
+          customNote: customNote
+        })
       })
       .then(() => {
         document.getElementById('tStudentId').value = '';
+        document.getElementById('tCustomNote').value = '';
         fetchActive();
       });
     }
