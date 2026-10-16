@@ -5,16 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teacher Hall Pass Control Panel</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 800px; margin: 0 auto; }
+    body { font-family: system-ui, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 850px; margin: 0 auto; }
     h1 { color: #4dabf7; margin-bottom: 20px; }
     .card { background: #1e1e1e; border: 1px solid #333; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
     .btn { background: #0d6efd; color: #fff; border: none; padding: 8px 14px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; }
     .btn-danger { background: #dc3545; }
     .btn-success { background: #198754; }
     .btn-warning { background: #ffc107; color: #000; }
-    .form-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
-    input, select { background: #2a2a2a; color: #fff; border: 1px solid #555; padding: 10px; font-size: 15px; border-radius: 6px; flex: 1; min-width: 150px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .form-full { grid-column: span 2; }
+    label { font-size: 13px; color: #aaa; margin-bottom: 4px; display: block; font-weight: 600; }
+    input, select { background: #2a2a2a; color: #fff; border: 1px solid #555; padding: 10px; font-size: 15px; border-radius: 6px; width: 100%; box-sizing: border-box; }
     .pass-row { display: flex; justify-content: space-between; align-items: center; background: #2b2b2b; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #ffc107; }
+    .pass-row.one-way { border-left-color: #0dcaf0; }
     .btn-group { display: flex; gap: 8px; }
   </style>
 </head>
@@ -23,32 +26,52 @@
   <h1>Teacher Hall Pass Dashboard</h1>
 
   <div class="card">
-    <h3>Issue Pass (Auto-Prints on Kiosk Printer)</h3>
+    <h3>Issue Pass (Remote Print to Kiosk)</h3>
     <br>
-    <div class="form-row">
-      <input type="text" id="tStudentId" placeholder="Student ID or Name">
-      <select id="tPassType">
-        <option value="STANDARD">Standard Out Pass</option>
-        <option value="LATE_PASS">One-Way Late Pass / Tardy Slip</option>
-        <option value="FUTURE_PASS">Future Pass (Specific Date/Period)</option>
-      </select>
+    <div class="form-grid">
+      <div>
+        <label>Student Name or ID *</label>
+        <input type="text" id="tStudentId" placeholder="Required">
+      </div>
+      <div>
+        <label>Pass Type *</label>
+        <select id="tPassType">
+          <option value="REGULAR">Regular Hall Pass (Monitored Queue)</option>
+          <option value="ONE_WAY">One-Way Pass (5-Min Log Queue)</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Destination Location *</label>
+        <select id="tLocation">
+          <option value="Student Services">Student Services</option>
+          <option value="Restroom">Restroom</option>
+          <option value="Attendance Office">Attendance Office</option>
+          <option value="Teacher's Room">Teacher's Room</option>
+          <option value="Main Office">Main Office</option>
+          <option value="Nurse">Nurse</option>
+          <option value="Library">Library</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Period (Optional)</label>
+        <input type="text" id="tPeriod" placeholder="e.g. 3rd Period">
+      </div>
+
+      <div>
+        <label>Date (Optional)</label>
+        <input type="text" id="tDate" placeholder="MM/DD/YYYY (Blank = Today)">
+      </div>
+
+      <div>
+        <label>Notes / Teacher Name (Optional)</label>
+        <input type="text" id="tNotes" placeholder="e.g. Sent by Mrs. Smith">
+      </div>
     </div>
 
-    <div class="form-row">
-      <select id="tLocation" onchange="checkCustomRoom(this.value)">
-        <option value="Restroom">Restroom</option>
-        <option value="Attendance Office">Attendance Office</option>
-        <option value="Teacher's Room">Teacher's Room (Specify below)</option>
-        <option value="Main Office">Main Office</option>
-        <option value="Nurse">Nurse</option>
-        <option value="Library">Library</option>
-        <option value="Student Services">Student Services</option>
-        <option value="Other">Other</option>
-      </select>
-      <input type="text" id="tCustomNote" placeholder="Notes / Teacher Name / Period / Date">
-    </div>
-
-    <button class="btn btn-success" style="width: 100%; margin-top: 6px;" onclick="teacherIssuePass()">Issue &amp; Print Pass</button>
+    <button class="btn btn-success" style="width: 100%; padding: 12px; font-size: 17px;" onclick="teacherIssuePass()">Issue &amp; Print Pass</button>
   </div>
 
   <div class="card">
@@ -59,42 +82,55 @@
     <div id="activeContainer">Loading active passes...</div>
   </div>
 
+  <div class="card">
+    <h3>Recent One-Way Passes (Last 5 Minutes)</h3>
+    <br>
+    <div id="oneWayContainer">Loading recent one-way passes...</div>
+  </div>
+
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWLWQ_55UX7Ky5_RmZU3xqC7iNQ5N5JoY6DqqTTJyewg8o-SwzmShcc1pX0d_Oq6S7rA/exec";
-
-    function checkCustomRoom(val) {
-      const noteInput = document.getElementById('tCustomNote');
-      if (val === "Teacher's Room") {
-        noteInput.placeholder = "Enter Teacher Name or Room #";
-        noteInput.focus();
-      } else {
-        noteInput.placeholder = "Notes / Period / Date";
-      }
-    }
 
     function fetchActive() {
       fetch(APPS_SCRIPT_URL + "?action=GET_ACTIVE")
       .then(res => res.json())
       .then(data => {
-        const container = document.getElementById('activeContainer');
-        document.getElementById('count').innerText = data.activePasses.length;
+        // Active Passes Queue
+        const activeContainer = document.getElementById('activeContainer');
+        document.getElementById('count').innerText = data.activePasses ? data.activePasses.length : 0;
 
         if (!data.activePasses || data.activePasses.length === 0) {
-          container.innerHTML = "<p style='color:#888;'>No active passes right now.</p>";
-          return;
+          activeContainer.innerHTML = "<p style='color:#888;'>No active passes right now.</p>";
+        } else {
+          activeContainer.innerHTML = data.activePasses.map(p => `
+            <div class="pass-row">
+              <div>
+                <strong>${p.name}</strong> — <span style="color:#ffc107;">${p.location}</span> (${p.time})
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-warning" onclick="reprintPass(${p.rowId})">🔄 Reprint</button>
+                <button class="btn btn-danger" onclick="clearSingle('${p.id}')">Return</button>
+              </div>
+            </div>
+          `).join('');
         }
 
-        container.innerHTML = data.activePasses.map(p => `
-          <div class="pass-row">
-            <div>
-              <strong>${p.name}</strong> — <span style="color:#ffc107;">${p.location}</span> (${p.time})
+        // One-Way Queue
+        const oneWayContainer = document.getElementById('oneWayContainer');
+        if (!data.oneWayPasses || data.oneWayPasses.length === 0) {
+          oneWayContainer.innerHTML = "<p style='color:#888;'>No one-way passes issued in the last 5 minutes.</p>";
+        } else {
+          oneWayContainer.innerHTML = data.oneWayPasses.map(p => `
+            <div class="pass-row one-way">
+              <div>
+                <strong>${p.name}</strong> — <span style="color:#0dcaf0;">${p.location}</span> (${p.time})
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-warning" onclick="reprintPass(${p.rowId})">🔄 Reprint</button>
+              </div>
             </div>
-            <div class="btn-group">
-              <button class="btn btn-warning" onclick="reprintPass(${p.rowId})">🔄 Reprint</button>
-              <button class="btn btn-danger" onclick="clearSingle('${p.id}')">Return</button>
-            </div>
-          </div>
-        `).join('');
+          `).join('');
+        }
       })
       .catch(err => {
         console.error("Dashboard sync error:", err);
@@ -105,9 +141,11 @@
       const idOrName = document.getElementById('tStudentId').value.trim();
       const passType = document.getElementById('tPassType').value;
       const location = document.getElementById('tLocation').value;
-      const customNote = document.getElementById('tCustomNote').value.trim();
+      const period = document.getElementById('tPeriod').value.trim();
+      const customDate = document.getElementById('tDate').value.trim();
+      const notes = document.getElementById('tNotes').value.trim();
 
-      if (!idOrName) return alert("Enter student ID or Name!");
+      if (!idOrName) return alert("Please enter Student Name or ID!");
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -117,12 +155,16 @@
           studentId: idOrName, 
           location: location,
           passType: passType,
-          customNote: customNote
+          period: period,
+          customDate: customDate,
+          notes: notes
         })
       })
       .then(() => {
         document.getElementById('tStudentId').value = '';
-        document.getElementById('tCustomNote').value = '';
+        document.getElementById('tPeriod').value = '';
+        document.getElementById('tDate').value = '';
+        document.getElementById('tNotes').value = '';
         fetchActive();
       });
     }
@@ -133,7 +175,7 @@
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "REPRINT_PASS", rowId: rowId })
       })
-      .then(() => alert("Pass sent to kiosk printer!"));
+      .then(() => alert("Reprint request sent to kiosk printer!"));
     }
 
     function clearSingle(studentId) {
