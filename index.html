@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.5</title>
+  <title>Hall Pass Kiosk v1.1.6</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -74,20 +74,23 @@
       font-weight: 700;
     }
 
-    .usb-bar { display: flex; align-items: center; gap: 10px; }
-    .usb-status { font-weight: bold; font-size: 2vh; }
+    .usb-bar { display: flex; align-items: center; gap: 8px; }
+    .usb-status { font-weight: bold; font-size: 1.8vh; }
     .usb-status.connected { color: #20c997; }
     .usb-status.disconnected { color: #dc3545; }
+    
     .usb-btn { 
       background: #0d6efd; 
       border: none; 
       color: white; 
       font-weight: bold; 
-      padding: 6px 14px; 
+      padding: 6px 12px; 
       border-radius: 6px; 
       cursor: pointer; 
-      font-size: 1.8vh; 
+      font-size: 1.6vh; 
     }
+    .test-btn { background: #6c757d; }
+    .force-btn { background: #198754; }
 
     .grid {
       display: grid;
@@ -212,7 +215,6 @@
     }
     .reprint-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* ELEVATED SPACE AT BOTTOM FOR VIRTUAL KEYBOARD */
     .keyboard-buffer {
       flex: 1;
       min-height: 12vh;
@@ -263,11 +265,13 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.5</span>
+          <span class="version-tag">v1.1.6</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
-          <button type="button" class="usb-btn" onclick="connectPrinter()">Connect</button>
+          <button type="button" class="usb-btn force-btn" onclick="forceSyncPrint()">⚡ FORCE PRINT</button>
+          <button type="button" class="usb-btn test-btn" onclick="testPrinter()">🖨 TEST</button>
+          <button type="button" class="usb-btn" onclick="connectPrinter()">CONNECT</button>
         </div>
       </header>
 
@@ -365,6 +369,18 @@
       resetStatusBox();
     }
 
+    function forceSyncPrint() {
+      const statusBox = document.getElementById('statusBox');
+      statusBox.className = "status-card";
+      statusBox.innerText = "Checking print queue...";
+      fetchActivePassesFromSheet();
+      setTimeout(() => resetStatusBox(), 2000);
+    }
+
+    function testPrinter() {
+      printPass("TEST STUDENT", "TEST ROOM", new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    }
+
     function fetchActivePassesFromSheet() {
       if (isFetching) return;
       isFetching = true;
@@ -377,7 +393,6 @@
           activePasses = data.activePasses;
           renderActivePasses();
 
-          // Check for active passes AND remote one-way passes flagged to print
           const allPending = [...(data.activePasses || []), ...(data.oneWayPasses || [])];
           allPending.forEach(p => {
             if (p.printPending) {
