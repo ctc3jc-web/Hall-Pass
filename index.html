@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.3</title>
+  <title>Hall Pass Kiosk v1.1.4</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -16,7 +16,8 @@
     html, body {
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       background: #121212;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -26,7 +27,7 @@
     .kiosk-container {
       display: flex;
       width: 100vw;
-      height: 100vh;
+      min-height: 100vh;
       padding: 0.8vh 1vw;
       gap: 1vw;
     }
@@ -52,7 +53,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 10vh;
+      height: 9vh;
       background: #1e1e1e;
       border: 2px solid #333;
       border-radius: 8px;
@@ -60,20 +61,20 @@
     }
 
     .title-group { display: flex; align-items: center; gap: 12px; }
-    h1 { font-size: 3.8vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
+    h1 { font-size: 3.5vh; color: #4dabf7; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
     
     .version-tag {
-      font-size: 2vh;
+      font-size: 1.8vh;
       color: #aaa;
       background: #2a2a2a;
       border: 1px solid #555;
-      padding: 4px 8px;
+      padding: 3px 6px;
       border-radius: 6px;
       font-weight: 700;
     }
 
     .usb-bar { display: flex; align-items: center; gap: 10px; }
-    .usb-status { font-weight: bold; font-size: 2.2vh; }
+    .usb-status { font-weight: bold; font-size: 2vh; }
     .usb-status.connected { color: #20c997; }
     .usb-status.disconnected { color: #dc3545; }
     .usb-btn { 
@@ -84,23 +85,22 @@
       padding: 6px 14px; 
       border-radius: 6px; 
       cursor: pointer; 
-      font-size: 2vh; 
+      font-size: 1.8vh; 
     }
 
-    /* LOCATION GRID (2x4) */
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 1vh 1vw;
-      height: 48vh;
+      height: 44vh;
     }
 
     .loc-btn {
       background: #1e1e1e;
       border: 3px solid #444;
       color: white;
-      font-size: 3.5vh;
+      font-size: 3.2vh;
       font-weight: 900;
       border-radius: 10px;
       display: flex;
@@ -117,9 +117,8 @@
       box-shadow: 0 0 16px rgba(13, 110, 253, 0.8);
     }
 
-    /* INPUT ROW WITH SUBMIT & CLEAR BUTTONS */
     .input-card {
-      height: 14vh;
+      height: 12vh;
       display: flex;
       gap: 8px;
     }
@@ -129,7 +128,7 @@
       background: #2a2a2a;
       border: 3px solid #555;
       color: #fff;
-      font-size: 4.2vh;
+      font-size: 4vh;
       font-weight: bold;
       padding: 0 16px;
       border-radius: 8px;
@@ -141,9 +140,9 @@
       background: #198754;
       border: none;
       color: white;
-      font-size: 3.2vh;
+      font-size: 3vh;
       font-weight: 900;
-      padding: 0 22px;
+      padding: 0 20px;
       border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
@@ -153,7 +152,7 @@
       background: #dc3545;
       border: none;
       color: white;
-      font-size: 2.8vh;
+      font-size: 2.6vh;
       font-weight: 900;
       padding: 0 16px;
       border-radius: 8px;
@@ -165,7 +164,7 @@
       background: #6f42c1;
       border: none;
       color: white;
-      font-size: 2.8vh;
+      font-size: 2.6vh;
       font-weight: 900;
       padding: 0 16px;
       border-radius: 8px;
@@ -176,7 +175,7 @@
     .action-row {
       display: flex;
       gap: 10px;
-      height: 14vh;
+      height: 12vh;
     }
 
     .status-card {
@@ -187,7 +186,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 3vh;
+      font-size: 2.8vh;
       font-weight: bold;
       border: 3px solid #444;
       padding: 0 12px;
@@ -200,9 +199,9 @@
       background: #ffc107;
       color: #000;
       border: none;
-      font-size: 2.6vh;
+      font-size: 2.4vh;
       font-weight: 900;
-      padding: 0 18px;
+      padding: 0 16px;
       border-radius: 8px;
       cursor: pointer;
       display: flex;
@@ -212,9 +211,14 @@
     }
     .reprint-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* RIGHT SIDE: CLICKABLE QUEUE FOR REPRINTING */
+    /* BOTTOM SPACER TO PREVENT KEYBOARD OVERLAP */
+    .bottom-spacer {
+      height: 15vh;
+      width: 100%;
+    }
+
     .active-header {
-      font-size: 3vh;
+      font-size: 2.8vh;
       color: #ffc107;
       font-weight: 900;
       text-transform: uppercase;
@@ -242,17 +246,12 @@
       flex-direction: column;
       gap: 4px;
       cursor: pointer;
-      transition: transform 0.1s ease, border-color 0.1s ease;
       user-select: none;
     }
-    .pass-chip:active {
-      transform: scale(0.98);
-      border-color: #ffffff;
-    }
 
-    .pass-chip .name { font-size: 2.8vh; font-weight: bold; color: #fff; }
-    .pass-chip .details { font-size: 2.2vh; color: #ddd; display: flex; justify-content: space-between; font-weight: 600; }
-    .pass-chip .reprint-hint { font-size: 1.8vh; color: #ffc107; text-align: right; font-weight: 700; margin-top: 2px; }
+    .pass-chip .name { font-size: 2.6vh; font-weight: bold; color: #fff; }
+    .pass-chip .details { font-size: 2vh; color: #ddd; display: flex; justify-content: space-between; font-weight: 600; }
+    .pass-chip .reprint-hint { font-size: 1.6vh; color: #ffc107; text-align: right; font-weight: 700; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -263,7 +262,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.3</span>
+          <span class="version-tag">v1.1.4</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -297,6 +296,8 @@
           🔄 REPRINT PASS
         </button>
       </div>
+
+      <div class="bottom-spacer"></div>
     </div>
 
     <div class="right-side">
@@ -318,6 +319,7 @@
     let activePasses = [];
     let lastPrintedPass = null;
     let isFetching = false;
+    let autoClearTimer = null;
 
     function cleanId(idStr) {
       if (!idStr) return "";
@@ -331,12 +333,22 @@
       }
     }
 
+    function resetAutoClearTimer() {
+      if (autoClearTimer) clearTimeout(autoClearTimer);
+      autoClearTimer = setTimeout(() => {
+        clearForm();
+      }, 30000); // 30-Second Auto-Clear Timer
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
       keepFocus();
       autoConnectPrinter();
       fetchActivePassesFromSheet();
-      setInterval(fetchActivePassesFromSheet, 1500);
+      setInterval(fetchActivePassesFromSheet, 2000);
       
+      const inputField = document.getElementById('manualIdInput');
+      inputField.addEventListener('input', resetAutoClearTimer);
+
       document.body.addEventListener('click', (e) => {
         if (!e.target.closest('.pass-chip') && !e.target.closest('button')) {
           keepFocus();
@@ -345,6 +357,7 @@
     });
 
     function clearForm() {
+      if (autoClearTimer) clearTimeout(autoClearTimer);
       document.getElementById('manualIdInput').value = '';
       selectedLocation = "";
       document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
@@ -377,7 +390,6 @@
       })
       .catch(err => {
         isFetching = false;
-        console.error("Sync error:", err);
       });
     }
 
@@ -457,7 +469,6 @@
         const encoder = new TextEncoder();
         await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
       } catch (err) {
-        console.error("Thermal print failed, re-initializing printer:", err);
         autoConnectPrinter();
       }
     }
@@ -476,6 +487,7 @@
     }
 
     function selectLoc(element, locName) {
+      resetAutoClearTimer();
       if (activePasses.length >= 4) {
         showError("LIMIT REACHED: Maximum 4 students out!");
         return;
@@ -538,9 +550,13 @@
 
     function executePassTransaction(studentId, customName) {
       const inputField = document.getElementById('manualIdInput');
+      const statusBox = document.getElementById('statusBox');
 
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerText = "Processing...";
+      statusBox.className = "status-card";
+      statusBox.innerText = "Processing...";
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6-Second Network Timeout Guard
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -549,21 +565,23 @@
           studentId: studentId, 
           location: selectedLocation,
           customName: customName 
-        })
+        }),
+        signal: controller.signal
       })
       .then(res => res.json())
       .then(result => {
+        clearTimeout(timeoutId);
         if (result.status === "success") {
           if (result.action === "ISSUED") {
-            document.getElementById('statusBox').className = "status-card success";
-            document.getElementById('statusBox').innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
+            statusBox.className = "status-card success";
+            statusBox.innerHTML = `PASS ISSUED! <b>${result.name}</b> → ${result.location}`;
             lastPrintedPass = { name: result.name, location: result.location, timestamp: result.timestamp };
             document.getElementById('reprintBtn').disabled = false;
             printPass(result.name, result.location, result.timestamp);
           } 
           else if (result.action === "RETURNED") {
-            document.getElementById('statusBox').className = "status-card returned";
-            document.getElementById('statusBox').innerHTML = `WELCOME BACK! <b>${result.name}</b> (${result.duration}).`;
+            statusBox.className = "status-card returned";
+            statusBox.innerHTML = `WELCOME BACK! <b>${result.name}</b> (${result.duration}).`;
           }
 
           fetchActivePassesFromSheet();
@@ -574,7 +592,15 @@
         clearForm();
         setTimeout(() => { resetStatusBox(); }, 2500);
       })
-      .catch(err => { showError("NETWORK ERROR: " + err.message); });
+      .catch(err => {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          showError("SERVER TIMEOUT: Please try scanning again.");
+        } else {
+          showError("NETWORK ERROR: " + err.message);
+        }
+        clearForm();
+      });
     }
 
     function showError(msg) {
