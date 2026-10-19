@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.6</title>
+  <title>Hall Pass Kiosk v1.1.7</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -140,37 +140,13 @@
       outline: none;
     }
 
-    .submit-btn {
-      background: #198754;
-      border: none;
-      color: white;
-      font-size: 3vh;
-      font-weight: 900;
-      padding: 0 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
     .clear-btn {
       background: #dc3545;
       border: none;
       color: white;
-      font-size: 2.6vh;
+      font-size: 2.8vh;
       font-weight: 900;
-      padding: 0 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .temp-id-btn {
-      background: #6f42c1;
-      border: none;
-      color: white;
-      font-size: 2.6vh;
-      font-weight: 900;
-      padding: 0 16px;
+      padding: 0 24px;
       border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
@@ -195,9 +171,10 @@
       border: 3px solid #444;
       padding: 0 12px;
     }
-    .status-card.success { border-color: #198754; background: #0f291e; }
-    .status-card.returned { border-color: #0dcaf0; background: #082d38; }
-    .status-card.error { border-color: #dc3545; background: #2c0b0e; }
+    .status-card.prompt { border-color: #ffc107; background: #332701; color: #ffc107; }
+    .status-card.success { border-color: #198754; background: #0f291e; color: #fff; }
+    .status-card.returned { border-color: #0dcaf0; background: #082d38; color: #fff; }
+    .status-card.error { border-color: #dc3545; background: #2c0b0e; color: #fff; }
 
     .reprint-btn {
       background: #ffc107;
@@ -265,7 +242,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.6</span>
+          <span class="version-tag">v1.1.7</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -288,14 +265,12 @@
 
       <div class="input-card">
         <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
-        <button type="button" class="submit-btn" onclick="processPass()">SUBMIT</button>
         <button type="button" class="clear-btn" onclick="clearForm()">CLEAR</button>
-        <button type="button" class="temp-id-btn" onclick="handleTempId()">TEMP ID</button>
       </div>
 
       <div class="action-row">
         <div id="statusBox" class="status-card">
-          1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Return
+          Scan Badge or Tap Location First
         </div>
         <button type="button" id="reprintBtn" class="reprint-btn" onclick="reprintLastPass()" disabled>
           🔄 REPRINT PASS
@@ -321,6 +296,7 @@
     let endpointOut = null;
     let interfaceNumber = 0;
     let selectedLocation = "";
+    let bufferedStudentId = "";
     let activePasses = [];
     let lastPrintedPass = null;
     let isFetching = false;
@@ -365,6 +341,7 @@
       if (autoClearTimer) clearTimeout(autoClearTimer);
       document.getElementById('manualIdInput').value = '';
       selectedLocation = "";
+      bufferedStudentId = "";
       document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
       resetStatusBox();
     }
@@ -506,6 +483,7 @@
 
     function selectLoc(element, locName) {
       resetAutoClearTimer();
+      
       if (activePasses.length >= 4) {
         showError("LIMIT REACHED: Maximum 4 students out!");
         return;
@@ -522,9 +500,15 @@
       document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
       selectedLocation = locName;
-      document.getElementById('statusBox').className = "status-card";
-      document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Leave`;
-      keepFocus();
+
+      // If student scanned first and was waiting for location, trigger transaction now
+      if (bufferedStudentId) {
+        executePassTransaction(bufferedStudentId, null);
+      } else {
+        document.getElementById('statusBox').className = "status-card";
+        document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Leave`;
+        keepFocus();
+      }
     }
 
     function renderActivePasses() {
@@ -550,24 +534,36 @@
       `).join('');
     }
 
-    function handleTempId() {
-      const studentName = prompt("Enter Student's First and Last Name:");
-      if (!studentName || !studentName.trim()) return;
-
-      const tempId = "TEMP-" + Date.now().toString().slice(-6);
-      executePassTransaction(tempId, studentName.trim());
-    }
-
     function processPass() {
       const inputField = document.getElementById('manualIdInput');
       let rawId = inputField.value.trim();
       if (!rawId) return;
 
-      executePassTransaction(cleanId(rawId), null);
+      const normId = cleanId(rawId);
+
+      // Check if student is currently out (Check-In / Return Flow)
+      const isAlreadyOut = activePasses.some(p => cleanId(p.id) === normId);
+
+      if (isAlreadyOut) {
+        // Instant check-in/return regardless of selected location
+        executePassTransaction(normId, null);
+        return;
+      }
+
+      // Issue Pass Flow: If no location selected yet, buffer the student ID and prompt for location
+      if (!selectedLocation) {
+        bufferedStudentId = normId;
+        const statusBox = document.getElementById('statusBox');
+        statusBox.className = "status-card prompt";
+        statusBox.innerHTML = `Badge Scanned! <b>TAP LOCATION ABOVE TO LEAVE</b>`;
+        return;
+      }
+
+      // Location was already selected, execute immediately
+      executePassTransaction(normId, null);
     }
 
     function executePassTransaction(studentId, customName) {
-      const inputField = document.getElementById('manualIdInput');
       const statusBox = document.getElementById('statusBox');
 
       statusBox.className = "status-card";
@@ -631,7 +627,7 @@
     function resetStatusBox() {
       const statusBox = document.getElementById('statusBox');
       statusBox.className = "status-card";
-      statusBox.innerHTML = "1. Tap Location &amp; Scan Badge &nbsp;|&nbsp; 2. Scan Again to Return";
+      statusBox.innerHTML = "Scan Badge or Tap Location First";
       keepFocus();
     }
 
