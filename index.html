@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.7</title>
+  <title>Hall Pass Kiosk v1.1.8</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -242,7 +242,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.7</span>
+          <span class="version-tag">v1.1.8</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -301,10 +301,31 @@
     let lastPrintedPass = null;
     let isFetching = false;
     let autoClearTimer = null;
+    let scanLockoutTimer = false;
+    let wakeLock = null;
+    let clickTimers = {};
 
     function cleanId(idStr) {
       if (!idStr) return "";
-      return String(idStr).trim().replace(/^0+/, '');
+      let str = String(idStr).trim().replace(/^0+/, '');
+      
+      // Scrub double-scanned repeated IDs (e.g. 10241024 -> 1024)
+      let len = str.length;
+      if (len > 3 && len % 2 === 0) {
+        let half = len / 2;
+        if (str.substring(0, half) === str.substring(half)) {
+          return str.substring(0, half);
+        }
+      }
+      return str;
+    }
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {}
     }
 
     function keepFocus() {
@@ -318,17 +339,22 @@
       if (autoClearTimer) clearTimeout(autoClearTimer);
       autoClearTimer = setTimeout(() => {
         clearForm();
-      }, 30000);
+      }, 30000); // 30-Second Abandoned Input Clear
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
       keepFocus();
+      requestWakeLock();
       autoConnectPrinter();
       fetchActivePassesFromSheet();
       setInterval(fetchActivePassesFromSheet, 1500);
       
       const inputField = document.getElementById('manualIdInput');
       inputField.addEventListener('input', resetAutoClearTimer);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') requestWakeLock();
+      });
 
       document.body.addEventListener('click', (e) => {
         if (!e.target.closest('.pass-chip') && !e.target.closest('button')) {
@@ -468,6 +494,21 @@
       }
     }
 
+    function handleCardClick(studentId, name, location, time) {
+      if (clickTimers[studentId]) {
+        // Double Tap Detected -> Return / Clear Student
+        clearTimeout(clickTimers[studentId]);
+        delete clickTimers[studentId];
+        executePassTransaction(studentId, null);
+      } else {
+        // Single Tap -> Reprint Pass
+        clickTimers[studentId] = setTimeout(() => {
+          delete clickTimers[studentId];
+          reprintPassDirectly(name, location, time);
+        }, 300); // 300ms Double Tap Window
+      }
+    }
+
     function reprintPassDirectly(name, location, time) {
       printPass(name, location, time);
       const statusBox = document.getElementById('statusBox');
@@ -501,7 +542,6 @@
       element.classList.add('active');
       selectedLocation = locName;
 
-      // If student scanned first and was waiting for location, trigger transaction now
       if (bufferedStudentId) {
         executePassTransaction(bufferedStudentId, null);
       } else {
@@ -523,7 +563,7 @@
       }
 
       listElem.innerHTML = activePasses.map(p => `
-        <div class="pass-chip" onclick="reprintPassDirectly('${p.name.replace(/'/g, "\\'")}', '${p.location}', '${p.time}')">
+        <div class="pass-chip" onclick="handleCardClick('${p.id}', '${p.name.replace(/'/g, "\\'")}', '${p.location}', '${p.time}')">
           <div class="name">${p.name}</div>
           <div class="details">
             <span>${p.location}</span>
@@ -535,22 +575,25 @@
     }
 
     function processPass() {
+      if (scanLockoutTimer) return;
+
       const inputField = document.getElementById('manualIdInput');
       let rawId = inputField.value.trim();
       if (!rawId) return;
 
       const normId = cleanId(rawId);
 
-      // Check if student is currently out (Check-In / Return Flow)
+      // Lock out secondary scanner input for 2.5 seconds
+      scanLockoutTimer = true;
+      setTimeout(() => { scanLockoutTimer = false; }, 2500);
+
       const isAlreadyOut = activePasses.some(p => cleanId(p.id) === normId);
 
       if (isAlreadyOut) {
-        // Instant check-in/return regardless of selected location
         executePassTransaction(normId, null);
         return;
       }
 
-      // Issue Pass Flow: If no location selected yet, buffer the student ID and prompt for location
       if (!selectedLocation) {
         bufferedStudentId = normId;
         const statusBox = document.getElementById('statusBox');
@@ -559,7 +602,6 @@
         return;
       }
 
-      // Location was already selected, execute immediately
       executePassTransaction(normId, null);
     }
 
