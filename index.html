@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hall Pass Kiosk v1.1.8</title>
+  <title>Hall Pass Kiosk v1.1.9</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -140,13 +140,30 @@
       outline: none;
     }
 
+    .one-way-btn {
+      background: #6f42c1;
+      border: 3px solid #9155fd;
+      color: white;
+      font-size: 2.4vh;
+      font-weight: 900;
+      padding: 0 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .one-way-btn.active {
+      background: #d63384;
+      border-color: #f783ac;
+      box-shadow: 0 0 12px rgba(214, 51, 132, 0.8);
+    }
+
     .clear-btn {
       background: #dc3545;
       border: none;
       color: white;
       font-size: 2.8vh;
       font-weight: 900;
-      padding: 0 24px;
+      padding: 0 20px;
       border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
@@ -197,15 +214,31 @@
       min-height: 12vh;
     }
 
-    .active-header {
-      font-size: 2.8vh;
-      color: #ffc107;
-      font-weight: 900;
-      text-transform: uppercase;
+    .active-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding-bottom: 8px;
       border-bottom: 3px solid #333;
       margin-bottom: 10px;
-      text-align: center;
+    }
+
+    .active-header {
+      font-size: 2.4vh;
+      color: #ffc107;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .refresh-ui-btn {
+      background: #0d6efd;
+      border: none;
+      color: white;
+      font-weight: 800;
+      font-size: 1.6vh;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
     .active-list {
@@ -242,7 +275,7 @@
       <header>
         <div class="title-group">
           <h1>MR. CARNEAL - HALL PASS</h1>
-          <span class="version-tag">v1.1.8</span>
+          <span class="version-tag">v1.1.9</span>
         </div>
         <div class="usb-bar">
           <span id="usbStatus" class="usb-status disconnected">PRINTER: Disconnected</span>
@@ -265,6 +298,7 @@
 
       <div class="input-card">
         <input type="text" id="manualIdInput" placeholder="Scan Badge to Leave or Return" autocomplete="off" autofocus>
+        <button type="button" id="oneWayBtn" class="one-way-btn" onclick="toggleOneWay()">➡️ ONE-WAY</button>
         <button type="button" class="clear-btn" onclick="clearForm()">CLEAR</button>
       </div>
 
@@ -281,7 +315,10 @@
     </div>
 
     <div class="right-side">
-      <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>/4)</div>
+      <div class="active-header-row">
+        <div class="active-header">CURRENTLY OUT (<span id="activeCount">0</span>/4)</div>
+        <button type="button" class="refresh-ui-btn" onclick="manualRefreshQueue()">🔄 REFRESH</button>
+      </div>
       <div id="activeList" class="active-list">
         <span style="color:#666; font-size:2.8vh; text-align:center; margin-top:20px;">No active passes</span>
       </div>
@@ -297,6 +334,7 @@
     let interfaceNumber = 0;
     let selectedLocation = "";
     let bufferedStudentId = "";
+    let isOneWaySelected = false;
     let activePasses = [];
     let lastPrintedPass = null;
     let isFetching = false;
@@ -309,7 +347,6 @@
       if (!idStr) return "";
       let str = String(idStr).trim().replace(/^0+/, '');
       
-      // Scrub double-scanned repeated IDs (e.g. 10241024 -> 1024)
       let len = str.length;
       if (len > 3 && len % 2 === 0) {
         let half = len / 2;
@@ -339,7 +376,7 @@
       if (autoClearTimer) clearTimeout(autoClearTimer);
       autoClearTimer = setTimeout(() => {
         clearForm();
-      }, 30000); // 30-Second Abandoned Input Clear
+      }, 30000);
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -363,13 +400,42 @@
       });
     });
 
+    function toggleOneWay() {
+      isOneWaySelected = !isOneWaySelected;
+      const btn = document.getElementById('oneWayBtn');
+      if (isOneWaySelected) {
+        btn.classList.add('active');
+        btn.innerText = "➡️ ONE-WAY (ON)";
+      } else {
+        btn.classList.remove('active');
+        btn.innerText = "➡️ ONE-WAY";
+      }
+      keepFocus();
+    }
+
     function clearForm() {
       if (autoClearTimer) clearTimeout(autoClearTimer);
       document.getElementById('manualIdInput').value = '';
       selectedLocation = "";
       bufferedStudentId = "";
-      document.querySelectorAll('.loc-btn').forEach(btn => btn.classList.remove('active'));
+      isOneWaySelected = false;
+      
+      const btn = document.getElementById('oneWayBtn');
+      if (btn) {
+        btn.classList.remove('active');
+        btn.innerText = "➡️ ONE-WAY";
+      }
+
+      document.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('active'));
       resetStatusBox();
+    }
+
+    function manualRefreshQueue() {
+      const statusBox = document.getElementById('statusBox');
+      statusBox.className = "status-card";
+      statusBox.innerText = "Refreshing pass queue...";
+      fetchActivePassesFromSheet();
+      setTimeout(() => resetStatusBox(), 1500);
     }
 
     function forceSyncPrint() {
@@ -474,18 +540,28 @@
         const ESC = '\x1B', GS = '\x1D';
 
         let passData = "";
-        passData += ESC + '@' + ESC + '3\x18';
+        passData += ESC + '@';                     // Initialize printer
+        passData += ESC + '3\x20';                 // Line spacing
+        
+        // Header
         passData += ESC + 'a\x01' + "MR. CARNEAL'S CLASSROOM\n";
         passData += "--------------------------------\n";
         passData += GS + '!\x11' + "HALL PASS\n" + GS + '!\x00';
         passData += "--------------------------------\n";
+        
+        // Body (Double Height Font GS ! \x10 for easy readability)
         passData += ESC + 'a\x00';
-        passData += `STUDENT: ${studentName}\n`;
-        passData += `DEST:    ${location}\n`;
-        passData += `DATE:    ${dateStr}\n`;
-        passData += `TIME:    ${timeStr}\n`;
+        passData += GS + '!\x10'; 
+        passData += `STUDENT:\n${studentName}\n\n`;
+        passData += `DEST:\n${location}\n\n`;
+        passData += GS + '!\x00';
+        passData += `DATE: ${dateStr}\n`;
+        passData += `TIME: ${timeStr}\n`;
         passData += ESC + 'a\x01' + "--------------------------------\n";
-        passData += '\n\n' + GS + 'V\x41\x00';
+        
+        // Extra Paper Feed lines for easy tearing
+        passData += "\n\n\n\n\n";
+        passData += GS + 'V\x41\x03'; // Partial Cut with extra feed distance
 
         const encoder = new TextEncoder();
         await usbDevice.transferOut(endpointOut.endpointNumber, encoder.encode(passData));
@@ -496,16 +572,14 @@
 
     function handleCardClick(studentId, name, location, time) {
       if (clickTimers[studentId]) {
-        // Double Tap Detected -> Return / Clear Student
         clearTimeout(clickTimers[studentId]);
         delete clickTimers[studentId];
         executePassTransaction(studentId, null);
       } else {
-        // Single Tap -> Reprint Pass
         clickTimers[studentId] = setTimeout(() => {
           delete clickTimers[studentId];
           reprintPassDirectly(name, location, time);
-        }, 300); // 300ms Double Tap Window
+        }, 300);
       }
     }
 
@@ -525,12 +599,12 @@
     function selectLoc(element, locName) {
       resetAutoClearTimer();
       
-      if (activePasses.length >= 4) {
+      if (!isOneWaySelected && activePasses.length >= 4) {
         showError("LIMIT REACHED: Maximum 4 students out!");
         return;
       }
 
-      if (locName === "Restroom") {
+      if (!isOneWaySelected && locName === "Restroom") {
         const restroomCount = activePasses.filter(p => p.location === "Restroom").length;
         if (restroomCount >= 2) {
           showError("LIMIT REACHED: Maximum 2 Bathroom passes!");
@@ -546,7 +620,7 @@
         executePassTransaction(bufferedStudentId, null);
       } else {
         document.getElementById('statusBox').className = "status-card";
-        document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> &nbsp;|&nbsp; Scan Badge to Leave`;
+        document.getElementById('statusBox').innerHTML = `Location: <b>${locName}</b> ${isOneWaySelected ? '(ONE-WAY)' : ''} &nbsp;|&nbsp; Scan Badge to Leave`;
         keepFocus();
       }
     }
@@ -569,7 +643,7 @@
             <span>${p.location}</span>
             <span>${p.time}</span>
           </div>
-          <div class="reprint-hint">🖨 Tap to Reprint</div>
+          <div class="reprint-hint">🖨 Tap to Reprint | Double Tap Clear</div>
         </div>
       `).join('');
     }
@@ -583,13 +657,12 @@
 
       const normId = cleanId(rawId);
 
-      // Lock out secondary scanner input for 2.5 seconds
       scanLockoutTimer = true;
       setTimeout(() => { scanLockoutTimer = false; }, 2500);
 
       const isAlreadyOut = activePasses.some(p => cleanId(p.id) === normId);
 
-      if (isAlreadyOut) {
+      if (isAlreadyOut && !isOneWaySelected) {
         executePassTransaction(normId, null);
         return;
       }
@@ -620,7 +693,8 @@
         body: JSON.stringify({ 
           studentId: studentId, 
           location: selectedLocation,
-          customName: customName 
+          customName: customName,
+          isOneWay: isOneWaySelected
         }),
         signal: controller.signal
       })
